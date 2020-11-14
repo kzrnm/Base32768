@@ -47,11 +47,7 @@ namespace Base32768
                     continue;
                 if (!name.EndsWith(".txt"))
                     continue;
-                var binNameArr = name.ToCharArray();
-                "bin".AsSpan().CopyTo(binNameArr.AsSpan()[^3..]);
-                var binName = new string(binNameArr);
-
-
+                var binName = System.IO.Path.ChangeExtension(name, "bin");
                 theoryData.Add(Encoding.UTF8.GetString(val), testData[binName]);
             }
             return theoryData;

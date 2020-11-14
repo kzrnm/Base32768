@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <None Update="test-data\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
