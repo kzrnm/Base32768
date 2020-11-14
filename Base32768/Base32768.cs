@@ -9,8 +9,8 @@ namespace Base32768
 {
     public static class Base32768
     {
-        public const int BITS_PER_CHAR = 15;// Base32768 is a 15-bit encoding
-        public const int BITS_PER_BYTE = 8;
+        internal const int BITS_PER_CHAR = 15;// Base32768 is a 15-bit encoding
+        internal const int BITS_PER_BYTE = 8;
         private static readonly Dictionary<int, (int numZBits, char z)> lookupD
             = new Dictionary<int, (int numZBits, char z)>();
         private static readonly char[] lookupE7;
