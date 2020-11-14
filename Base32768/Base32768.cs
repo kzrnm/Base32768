@@ -11,42 +11,38 @@ namespace Kzrnm.Convert.Base32768
     {
         internal const int BITS_PER_CHAR = 15;// Base32768 is a 15-bit encoding
         internal const int BITS_PER_BYTE = 8;
-        private static readonly Dictionary<int, (int numZBits, char z)> lookupD
+        internal static readonly Dictionary<int, (int numZBits, char z)> lookupD
             = new Dictionary<int, (int numZBits, char z)>();
-        private static readonly char[] lookupE7;
-        private static readonly char[] lookupE15;
-        static Base32768()
-        {
-            lookupE15 = Build(new (int from, int to)[] {
-                (1184, 1216), (1280, 1312), (1664, 1728), (1888, 1952),
-                (1984, 2016), (4096, 4128), (4256, 4288), (4352, 4448),
-                (4480, 4512), (4576, 4672), (4704, 4736), (4832, 4864),
-                (4896, 4928), (5024, 5088), (5152, 5728), (5792, 5856),
-                (6016, 6048), (6176, 6240), (6336, 6368), (6528, 6560),
-                (6624, 6656), (6688, 6720), (7104, 7136), (7168, 7200),
-                (7424, 7456), (8672, 8704), (8896, 8928), (9024, 9184),
-                (9216, 9248), (9472, 10080), (10112, 10176), (10240, 10624),
-                (10656, 10688), (10784, 10848), (10880, 10944), (10976, 11104),
-                (11264, 11296), (11392, 11488), (11520, 11552), (11584, 11616),
-                (11936, 12000), (12736, 12768), (13312, 19872), (19904, 40896),
-                (40960, 42112), (42144, 42176), (42240, 42496), (42560, 42592),
-                (42656, 42720), (42752, 42848), (42880, 42912), (43072, 43104),
-            }, 32768, 0);
-            lookupE7 = Build(new (int from, int to)[] {
-                (384, 416), (576, 672),
-            }, 128, 1);
-        }
-        private static char[] Build((int from, int to)[] pairString, int size, int r)
+        internal static readonly char[] lookupE7 = Build(new (char from, char to)[] {
+            ('\u0180', '\u01a0'), ('\u0240', '\u02a0'),
+        }, 128, 1);
+        internal static readonly char[] lookupE15 = Build(new (char from, char to)[] {
+            ('\u04a0', '\u04c0'), ('\u0500', '\u0520'), ('\u0680', '\u06c0'), ('\u0760', '\u07a0'),
+            ('\u07c0', '\u07e0'), ('\u1000', '\u1020'), ('\u10a0', '\u10c0'), ('\u1100', '\u1160'),
+            ('\u1180', '\u11a0'), ('\u11e0', '\u1240'), ('\u1260', '\u1280'), ('\u12e0', '\u1300'),
+            ('\u1320', '\u1340'), ('\u13a0', '\u13e0'), ('\u1420', '\u1660'), ('\u16a0', '\u16e0'),
+            ('\u1780', '\u17a0'), ('\u1820', '\u1860'), ('\u18c0', '\u18e0'), ('\u1980', '\u19a0'),
+            ('\u19e0', '\u1a00'), ('\u1a20', '\u1a40'), ('\u1bc0', '\u1be0'), ('\u1c00', '\u1c20'),
+            ('\u1d00', '\u1d20'), ('\u21e0', '\u2200'), ('\u22c0', '\u22e0'), ('\u2340', '\u23e0'),
+            ('\u2400', '\u2420'), ('\u2500', '\u2760'), ('\u2780', '\u27c0'), ('\u2800', '\u2980'),
+            ('\u29a0', '\u29c0'), ('\u2a20', '\u2a60'), ('\u2a80', '\u2ac0'), ('\u2ae0', '\u2b60'),
+            ('\u2c00', '\u2c20'), ('\u2c80', '\u2ce0'), ('\u2d00', '\u2d20'), ('\u2d40', '\u2d60'),
+            ('\u2ea0', '\u2ee0'), ('\u31c0', '\u31e0'), ('\u3400', '\u4da0'), ('\u4dc0', '\u9fc0'),
+            ('\ua000', '\ua480'), ('\ua4a0', '\ua4c0'), ('\ua500', '\ua600'), ('\ua640', '\ua660'),
+            ('\ua6a0', '\ua6e0'), ('\ua700', '\ua760'), ('\ua780', '\ua7a0'), ('\ua840', '\ua860'),
+        }, 32768, 0);
+        private static char[] Build((char from, char to)[] pairString, int size, int r)
         {
             var numZBits = BITS_PER_CHAR - BITS_PER_BYTE * r;
             var encodeRepertoire = new char[size];
             var ix = 0;
             foreach (var (from, to) in pairString)
-                for (int i = from; i < to; i++)
+                for (char i = from; i < to; i++)
                 {
                     lookupD[i] = (numZBits, (char)ix);
-                    encodeRepertoire[ix++] = (char)i;
+                    encodeRepertoire[ix++] = i;
                 }
+            System.Diagnostics.Debug.Assert(size == ix);
             return encodeRepertoire;
         }
 
