@@ -6,7 +6,7 @@ namespace Kzrnm.Convert.Base32768
 {
     public class Base32768Test
     {
-        Random rnd = new Random();
+        static Random rnd = new Random();
 
         [Fact]
         public void Simple255()
@@ -20,21 +20,29 @@ namespace Kzrnm.Convert.Base32768
             Assert.Equal(new byte[] { 255, 255, 255 }, Base32768.Decode("ꡟꡟ"));
         }
 
-        [Fact]
-        public void RandomBytes()
+
+        public static TheoryData EnumerateRandomBytes()
         {
+            var theoryData = new TheoryData<byte[]>();
             for (int i = 0; i < 1000; i++)
             {
-                var bytes = new byte[rnd.Next(1, 1000)];
+                var bytes = new byte[rnd.Next(1, 100)];
                 rnd.NextBytes(bytes);
-
-                var str = Base32768.Encode(bytes);
-                Assert.Equal(str, Base32768.Encode(bytes.AsSpan()));
-                Assert.True(str.IsNormalized());
-
-                Assert.Equal(bytes, Base32768.Decode(str));
-                Assert.Equal(bytes, Base32768.Decode(str.AsSpan()));
+                theoryData.Add(bytes);
             }
+            return theoryData;
+        }
+
+        [Theory]
+        [MemberData(nameof(EnumerateRandomBytes))]
+        public void RandomBytes(byte[] bytes)
+        {
+            var str = Base32768.Encode(bytes);
+            Assert.Equal(str, Base32768.Encode(bytes.AsSpan()));
+            Assert.True(str.IsNormalized());
+
+            Assert.Equal(bytes, Base32768.Decode(str));
+            Assert.Equal(bytes, Base32768.Decode(str.AsSpan()));
         }
 
         public static TheoryData EnumeratePairTestData()
