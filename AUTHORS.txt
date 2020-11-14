@@ -1,0 +1,5 @@
+## qntm/base32768
+
+https://github.com/qntm/base32768
+
+MIT License
