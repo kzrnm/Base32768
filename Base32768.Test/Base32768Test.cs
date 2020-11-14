@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Xunit;
+using FluentAssertions;
 
 namespace Kzrnm.Convert.Base32768
 {
@@ -11,13 +12,9 @@ namespace Kzrnm.Convert.Base32768
         [Fact]
         public void Simple255()
         {
-            Assert.Equal("ꡟ", Base32768.Encode(stackalloc byte[] { 255 }));
-            Assert.Equal("ꡟʟ", Base32768.Encode(stackalloc byte[] { 255, 255 }));
-            Assert.Equal("ꡟꡟ", Base32768.Encode(stackalloc byte[] { 255, 255, 255 }));
-
-            Assert.Equal(new byte[] { 255 }, Base32768.Decode("ꡟ"));
-            Assert.Equal(new byte[] { 255, 255 }, Base32768.Decode("ꡟʟ"));
-            Assert.Equal(new byte[] { 255, 255, 255 }, Base32768.Decode("ꡟꡟ"));
+            Base32768.Encode(stackalloc byte[] { 255 }).Should().Be("ꡟ");
+            Base32768.Encode(stackalloc byte[] { 255, 255 }).Should().Be("ꡟʟ");
+            Base32768.Encode(stackalloc byte[] { 255, 255, 255 }).Should().Be("ꡟꡟ");
         }
 
         public static TheoryData EnumerateRandomBytes()
@@ -37,11 +34,11 @@ namespace Kzrnm.Convert.Base32768
         public void RandomBytes(byte[] bytes)
         {
             var str = Base32768.Encode(bytes);
-            Assert.Equal(str, Base32768.Encode(bytes.AsSpan()));
-            Assert.True(str.IsNormalized());
+            Base32768.Encode(bytes.AsSpan()).Should().Be(str);
+            str.IsNormalized().Should().BeTrue();
 
-            Assert.Equal(bytes, Base32768.Decode(str));
-            Assert.Equal(bytes, Base32768.Decode(str.AsSpan()));
+            Base32768.Decode(str).Should().Equal(bytes);
+            Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
         }
 
         public static TheoryData EnumeratePairTestData()
@@ -64,8 +61,8 @@ namespace Kzrnm.Convert.Base32768
         [MemberData(nameof(EnumeratePairTestData))]
         public void PairTestData(string str, byte[] bytes)
         {
-            Assert.Equal(str, Base32768.Encode(bytes));
-            Assert.Equal(bytes, Base32768.Decode(str));
+            Base32768.Encode(bytes).Should().Be(str);
+            Base32768.Decode(str).Should().Equal(bytes);
         }
     }
 }
