@@ -1,9 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <LangVersion>7</LangVersion>
-
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
 
     <SignAssembly>True</SignAssembly>
@@ -13,9 +11,6 @@
 
     <PackageId>Base32768</PackageId>
     <Description>Base32768 is a binary encoding optimised for UTF-16-encoded text.</Description>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <Authors>naminodarie</Authors>
     <PackageTags>Base32768;binary encoding</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
