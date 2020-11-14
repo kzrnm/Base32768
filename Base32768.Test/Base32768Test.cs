@@ -20,7 +20,6 @@ namespace Kzrnm.Convert.Base32768
             Assert.Equal(new byte[] { 255, 255, 255 }, Base32768.Decode("ꡟꡟ"));
         }
 
-
         public static TheoryData EnumerateRandomBytes()
         {
             var theoryData = new TheoryData<byte[]>();

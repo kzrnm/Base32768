@@ -6,6 +6,10 @@
     <IsPackable>false</IsPackable>
 
     <RootNamespace>Kzrnm.Convert.Base32768</RootNamespace>
+
+    <SignAssembly>true</SignAssembly>
+
+    <AssemblyOriginatorKeyFile>..\Base32768\key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
