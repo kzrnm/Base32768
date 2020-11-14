@@ -6,7 +6,7 @@ namespace Kzrnm.Convert.Base32768
 {
     public class Base32768Test
     {
-        static Random rnd = new Random();
+        static readonly Random rnd = new Random();
 
         [Fact]
         public void Simple255()
