@@ -6,6 +6,9 @@ using BenchmarkDotNet.Running;
 using Kzrnm.Convert.Base32768;
 using System;
 
+_ = BenchmarkRunner.Run(typeof(Base32768Benchmark).Assembly);
+
+
 public class BenchmarkConfig : ManualConfig
 {
     public BenchmarkConfig()
@@ -14,17 +17,10 @@ public class BenchmarkConfig : ManualConfig
         AddJob(Job.ShortRun);
     }
 }
-class Program
-{
-    public static void Main()
-    {
-        _ = BenchmarkRunner.Run(typeof(Program).Assembly);
-    }
-}
 
 [Config(typeof(BenchmarkConfig))]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByMethod)]
-public class Md5VsSha256
+public class Base32768Benchmark
 {
     [Params(1000, 10000, 100000)]
     public int N;
