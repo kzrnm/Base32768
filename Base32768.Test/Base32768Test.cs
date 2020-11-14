@@ -2,12 +2,21 @@
 using System.Text;
 using Xunit;
 using FluentAssertions;
+using System.Linq;
 
 namespace Kzrnm.Convert.Base32768
 {
     public class Base32768Test
     {
-        static readonly Random rnd = new Random();
+        [Fact]
+        public void ValidLookupD()
+        {
+            var lookupD = Base32768.lookupD;
+            lookupD.Should().HaveCount(32768 + 128);
+            var chs = lookupD.Keys.Select(c => (char)c).ToArray();
+            string.Join("", chs).IsNormalized().Should().BeTrue();
+            string.Join("", chs.Reverse()).IsNormalized().Should().BeTrue();
+        }
 
         [Fact]
         public void Simple255()
@@ -19,6 +28,8 @@ namespace Kzrnm.Convert.Base32768
 
         public static TheoryData EnumerateRandomBytes()
         {
+            var rnd = new Random();
+
             var theoryData = new TheoryData<byte[]>();
             for (int i = 0; i < 1000; i++)
             {
