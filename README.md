@@ -4,9 +4,36 @@ Base32768 is a binary encoding optimised for UTF-16-encoded text.
 
 C# port of [Base32768](https://github.com/qntm/base32768)
 
+## Installation
+
+```
+Install-Package Base32768
+```
+
 ## Usage
 
-TODO:
+```C#
+using System;
+using Kzrnm.Convert.Base32768;
+
+var byteArray = new byte[] { 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100 };
+var str = Base32768.Encode(byteArray);
+Console.WriteLine(str);
+//// 6 code points, "媒腻㐤┖ꈳ埳"
+
+var byteArray2 = Base32768.Decode(str);
+Console.WriteLine(string.Join(", ", byteArray2));
+//// [104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]
+
+// .NET Standard 2.1
+str = Base32768.Encode(stackalloc byte[] { 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100 });
+Console.WriteLine(str);
+//// 6 code points, "媒腻㐤┖ꈳ埳"
+
+byteArray2 = Base32768.Decode(str.AsSpan());
+Console.WriteLine(string.Join(", ", byteArray2));
+//// [104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]
+```
 
 ## Benchmark
 
