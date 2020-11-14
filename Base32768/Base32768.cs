@@ -5,7 +5,7 @@ using System.Text;
 Base32768 is a binary-to-text encoding optimised for UTF-16-encoded text.
 (e.g. Windows, Java, JavaScript)
 */
-namespace Base32768
+namespace Kzrnm.Convert.Base32768
 {
     public static class Base32768
     {

@@ -2,7 +2,7 @@
 using System.Text;
 using Xunit;
 
-namespace Base32768
+namespace Kzrnm.Convert.Base32768
 {
     public class Base32768Test
     {

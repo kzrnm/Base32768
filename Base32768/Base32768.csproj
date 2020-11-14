@@ -22,5 +22,7 @@
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
 
     <PackageOutputPath>$(MSBuildThisFileDirectory)bin\Packages\$(Configuration)\</PackageOutputPath>
+
+    <RootNamespace>Kzrnm.Convert.Base32768</RootNamespace>
   </PropertyGroup>
 </Project>

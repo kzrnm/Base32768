@@ -5,7 +5,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <RootNamespace>Base32768</RootNamespace>
+    <RootNamespace>Kzrnm.Convert.Base32768</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
