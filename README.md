@@ -1,5 +1,8 @@
 # Base32768
 
+[![NuGet version (ac-library-csharp)](https://img.shields.io/nuget/v/Base32768.svg?style=flat-square)](https://www.nuget.org/packages/ac-library-csharp/)
+![test](https://github.com/naminodarie/Base32768/workflows/test/badge.svg?branch=master)
+
 Base32768 is a binary encoding optimised for UTF-16-encoded text.
 
 C# port of [Base32768](https://github.com/qntm/base32768)
