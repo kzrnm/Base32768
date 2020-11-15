@@ -5,6 +5,12 @@
     <LangVersion>7</LangVersion>
 
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)bin\Packages\$(Configuration)\</PackageOutputPath>
+    <RootNamespace>Kzrnm.Convert.Base32768</RootNamespace>
+
     <PackageId>Base32768</PackageId>
     <Description>Base32768 is a binary encoding optimised for UTF-16-encoded text.</Description>
   </PropertyGroup>
@@ -18,12 +24,5 @@
     <RepositoryUrl>https://github.com/naminodarie/Base32768</RepositoryUrl>
 
     <Version>1.0.1</Version>
-
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
-
-    <PackageOutputPath>$(MSBuildThisFileDirectory)bin\Packages\$(Configuration)\</PackageOutputPath>
-
-    <RootNamespace>Kzrnm.Convert.Base32768</RootNamespace>
   </PropertyGroup>
 </Project>
