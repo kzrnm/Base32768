@@ -1,8 +1,8 @@
-﻿using System;
+﻿using FluentAssertions;
+using System;
+using System.Collections.Generic;
 using System.Text;
 using Xunit;
-using FluentAssertions;
-using System.Linq;
 
 namespace Kzrnm.Convert.Base32768
 {
@@ -12,10 +12,17 @@ namespace Kzrnm.Convert.Base32768
         public void ValidLookupD()
         {
             var lookupD = Base32768.lookupD;
-            lookupD.Should().HaveCount(32768 + 128);
-            var chs = lookupD.Keys.Select(c => (char)c).ToArray();
-            string.Join("", chs).IsNormalized().Should().BeTrue();
-            string.Join("", chs.Reverse()).IsNormalized().Should().BeTrue();
+            var keys = new List<char>();
+            for (int i = 0; i < lookupD.Length; i++)
+                if (lookupD[i].numZBits == 7 || lookupD[i].numZBits == 15)
+                    keys.Add((char)i);
+
+            keys.Should().HaveCount(32768 + 128);
+            foreach (var c in keys)
+                c.ToString().IsNormalized().Should().BeTrue();
+            string.Join("", keys).IsNormalized().Should().BeTrue();
+            keys.Reverse();
+            string.Join("", keys).IsNormalized().Should().BeTrue();
         }
 
         [Fact]
@@ -74,6 +81,28 @@ namespace Kzrnm.Convert.Base32768
         {
             Base32768.Encode(bytes).Should().Be(str);
             Base32768.Decode(str).Should().Equal(bytes);
+        }
+
+        public static TheoryData EnumerateTestDataBad()
+        {
+            var testData = TestUtil.TestData;
+            var theoryData = new TheoryData<string>();
+            foreach (var (name, val) in testData)
+            {
+                if (!name.StartsWith("test-data/bad"))
+                    continue;
+                if (!name.EndsWith(".txt"))
+                    continue;
+                theoryData.Add(Encoding.UTF8.GetString(val));
+            }
+            return theoryData;
+        }
+
+        [Theory]
+        [MemberData(nameof(EnumerateTestDataBad))]
+        public void Bad(string str)
+        {
+            str.Invoking(str => Base32768.Decode(str)).Should().Throw<FormatException>();
         }
     }
 }

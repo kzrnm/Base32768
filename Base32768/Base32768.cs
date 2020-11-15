@@ -11,8 +11,8 @@ namespace Kzrnm.Convert.Base32768
     {
         internal const int BITS_PER_CHAR = 15;// Base32768 is a 15-bit encoding
         internal const int BITS_PER_BYTE = 8;
-        internal static readonly Dictionary<int, (int numZBits, char z)> lookupD
-            = new Dictionary<int, (int numZBits, char z)>();
+        internal static readonly (int numZBits, char z)[] lookupD
+            = new (int numZBits, char z)[0xA860];
         internal static readonly char[] lookupE7 = Build(new (char from, char to)[] {
             ('\u0180', '\u01a0'), ('\u0240', '\u02a0'),
         }, 128, 1);
@@ -111,12 +111,20 @@ namespace Kzrnm.Convert.Base32768
             for (int i = 0; i < str.Length; i++)
             {
                 var chr = str[i];
-                if (!lookupD.TryGetValue(chr, out var tup))
-                    throw new FormatException($"Unrecognised Base32768 character: {chr}");
 
-                var (numZBits, z) = tup;
-                if (numZBits != BITS_PER_CHAR && i != str.Length - 1)
-                    throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                var (numZBits, z) = lookupD[chr];
+                switch (numZBits)
+                {
+                    case 15:
+                        break;
+                    case 7:
+                        if (i != str.Length - 1)
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        break;
+                    default:
+                        throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                }
+
                 do
                 {
                     var mask = (1 << numZBits) - 1;
