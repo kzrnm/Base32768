@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using Xunit;
 
@@ -8,23 +7,6 @@ namespace Kzrnm.Convert.Base32768
 {
     public class Base32768Test
     {
-        [Fact]
-        public void ValidLookupD()
-        {
-            var lookupD = Base32768.lookupD;
-            var keys = new List<char>();
-            for (int i = 0; i < lookupD.Length; i++)
-                if (lookupD[i].numZBits == 7 || lookupD[i].numZBits == 15)
-                    keys.Add((char)i);
-
-            keys.Should().HaveCount(32768 + 128);
-            foreach (var c in keys)
-                c.ToString().IsNormalized().Should().BeTrue();
-            string.Join("", keys).IsNormalized().Should().BeTrue();
-            keys.Reverse();
-            string.Join("", keys).IsNormalized().Should().BeTrue();
-        }
-
         [Fact]
         public void Simple255()
         {
