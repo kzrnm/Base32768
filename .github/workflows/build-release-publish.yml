@@ -94,7 +94,6 @@ jobs:
         id: create-release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: true
           tag: ${{ steps.tag-version.outputs.new_tag }}
           name: Version ${{ needs.get-version.outputs.version }}
           body: ${{ steps.tag_version.outputs.changelog }}
