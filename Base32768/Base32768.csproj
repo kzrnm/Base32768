@@ -18,6 +18,6 @@
     <PackageProjectUrl>https://github.com/naminodarie/Base32768</PackageProjectUrl>
     <RepositoryUrl>https://github.com/naminodarie/Base32768</RepositoryUrl>
 
-    <Version>1.0.2</Version>
+    <Version>1.0.3-alpha.1</Version>
   </PropertyGroup>
 </Project>
