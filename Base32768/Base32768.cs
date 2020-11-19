@@ -39,7 +39,7 @@ namespace Kzrnm.Convert.Base32768
 
         internal const char ZBits15Start = '\u04a0';
 
-        internal static readonly short?[] lookupD = new short?[0xA860];
+        internal static readonly ushort?[] lookupD = new ushort?[0xA860];
         internal static readonly char[] lookupE7 = Build(
             new (char from, char to)[] {
             ('\u0180', '\u01a0'), ('\u0240', '\u02a0'),
@@ -63,7 +63,7 @@ namespace Kzrnm.Convert.Base32768
         private static char[] Build((char from, char to)[] pairString, int size)
         {
             var encodeRepertoire = new char[size];
-            short ix = 0;
+            ushort ix = 0;
             foreach (var (from, to) in pairString)
                 for (char i = from; i < to; i++)
                 {
@@ -141,7 +141,7 @@ namespace Kzrnm.Convert.Base32768
                 var chr = str[i];
 
                 int numZBits = 15;
-                if (lookupD[chr] is short z)
+                if (lookupD[chr] is ushort z)
                 {
                     if (chr < ZBits15Start)
                     {
