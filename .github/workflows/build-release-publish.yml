@@ -19,6 +19,7 @@ jobs:
     outputs:
       version: ${{ steps.get-version.outputs.version }}
       is-new: ${{ steps.is-new-version.outputs.is-new }}
+      is-prerelease: ${{ steps.is-new-version.outputs.is-prerelease }}
     steps:
       - uses: actions/checkout@v2
       - name: Get version
@@ -36,9 +37,13 @@ jobs:
       - name: is new version?
         id: is-new-version
         run: |
+          IS_PRE=false
           IS_NEW=false
           if [ "${{ steps.get-version.outputs.version }}" = "${GITHUB_REF#refs/tags/v}" ]; then
             echo "create version tag event: $GITHUB_REF"
+            if [ "${{ steps.get-version.outputs.version-suffix }}" != "" ]; then
+              IS_PRE=true
+            fi
             IS_NEW=true
           elif [ "${{ steps.check-tag.outputs.exists }}" = "false" ]; then
             if [ "${{ steps.get-version.outputs.version-suffix }}" = "" ]; then
@@ -47,6 +52,7 @@ jobs:
             fi
           fi
           echo "::set-output name=is-new::$IS_NEW"
+          echo "::set-output name=is-prerelease::$IS_PRE"
 
   new-version-only:
     runs-on: ubuntu-latest
@@ -109,6 +115,7 @@ jobs:
           name: Version ${{ needs.get-version.outputs.version }}
           body: ${{ steps.tag_version.outputs.changelog }}
           artifacts: "./dist/*.nupkg"
+          prerelease: ${{ needs.get-version.outputs.is-prerelease }}
   publish:
     runs-on: windows-latest
     needs: [build]
