@@ -43,18 +43,18 @@ Console.WriteLine(string.Join(", ", byteArray2));
 BenchmarkDotNet=v0.12.1, OS=Windows 10.0.18363.1198 (1909/November2018Update/19H2)
 Intel Core i7-4790 CPU 3.60GHz (Haswell), 1 CPU, 8 logical and 4 physical cores
 .NET Core SDK=5.0.100
-  [Host]   : .NET Core 3.1.10 (CoreCLR 4.700.20.51601, CoreFX 4.700.20.51901), X64 RyuJIT
-  ShortRun : .NET Core 3.1.10 (CoreCLR 4.700.20.51601, CoreFX 4.700.20.51901), X64 RyuJIT
+  [Host]   : .NET Core 5.0.0 (CoreCLR 5.0.20.51904, CoreFX 5.0.20.51904), X64 RyuJIT
+  ShortRun : .NET Core 5.0.0 (CoreCLR 5.0.20.51904, CoreFX 5.0.20.51904), X64 RyuJIT
 
 Job=ShortRun  IterationCount=3  LaunchCount=1
 WarmupCount=3
 
-| Method |      N |       Mean |      Error |     StdDev |   Gen 0 |   Gen 1 |   Gen 2 | Allocated |
-|------- |------- |-----------:|-----------:|-----------:|--------:|--------:|--------:|----------:|
-| Encode |   1000 |   3.756 us |   2.003 us |  0.1098 us |  0.5341 |       - |       - |   2.19 KB |
-| Encode |  10000 |  37.181 us |   7.361 us |  0.4035 us |  5.1270 |  0.0610 |       - |  20.94 KB |
-| Encode | 100000 | 372.515 us | 116.843 us |  6.4046 us | 66.4063 | 66.4063 | 66.4063 | 208.44 KB |
-|        |        |            |            |            |         |         |         |           |
-| Decode |   1000 |   5.539 us |   3.804 us |  0.2085 us |  0.2441 |       - |       - |      1 KB |
-| Decode |  10000 |  54.333 us |  11.788 us |  0.6461 us |  2.3804 |       - |       - |   9.79 KB |
-| Decode | 100000 | 553.683 us | 192.352 us | 10.5435 us | 30.2734 | 30.2734 | 30.2734 |  97.68 KB |
+| Method |      N |       Mean |      Error |    StdDev |   Gen 0 |   Gen 1 |   Gen 2 | Allocated |
+|------- |------- |-----------:|-----------:|----------:|--------:|--------:|--------:|----------:|
+| Encode |   1000 |   3.891 us |   1.016 us | 0.0557 us |  0.5341 |       - |       - |   2.19 KB |
+| Encode |  10000 |  37.524 us |  10.729 us | 0.5881 us |  5.0659 |       - |       - |  20.94 KB |
+| Encode | 100000 | 384.805 us | 134.991 us | 7.3993 us | 66.4063 | 66.4063 | 66.4063 | 208.44 KB |
+|        |        |            |            |           |         |         |         |           |
+| Decode |   1000 |   4.941 us |   3.134 us | 0.1718 us |  0.2441 |       - |       - |      1 KB |
+| Decode |  10000 |  56.981 us |  20.862 us | 1.1435 us |  2.3804 |       - |       - |   9.79 KB |
+| Decode | 100000 | 524.458 us |  70.292 us | 3.8529 us | 30.2734 | 30.2734 | 30.2734 |  97.68 KB |
