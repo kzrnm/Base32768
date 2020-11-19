@@ -12,6 +12,8 @@ env:
   DOTNET_NOLOGO: true
   NUGET_XMLDOC_MODE: skip
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+  WORKFLOW_VERSION_PROJ: Base32768/Base32768.csproj
+  WORKFLOW_BUILD_SLN: Base32768.sln
 
 jobs:
   get-version:
@@ -26,7 +28,7 @@ jobs:
         uses: naminodarie/get-net-sdk-project-versions-action@v1
         id: get-version
         with:
-          proj-path: Base32768/Base32768.csproj
+          proj-path: ${{ env.WORKFLOW_VERSION_PROJ }}
       - name: Check tag
         uses: mukunku/tag-exists-action@v1.0.0
         id: check-tag
@@ -81,11 +83,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
       - name: Install dependencies
-        run: dotnet restore
+        run: dotnet restore ${{ env.WORKFLOW_BUILD_SLN }}
       - name: Build
-        run: dotnet build --no-restore -c Release
+        run: dotnet build ${{ env.WORKFLOW_BUILD_SLN }} --no-restore -c Release
       - name: Test
-        run: dotnet test --no-restore --verbosity normal -c Release
+        run: dotnet test ${{ env.WORKFLOW_BUILD_SLN }} --no-restore --verbosity normal -c Release
       - uses: actions/upload-artifact@v1
         with:
           name: dist

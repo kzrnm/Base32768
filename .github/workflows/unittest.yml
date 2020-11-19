@@ -22,6 +22,7 @@ env:
   DOTNET_NOLOGO: true
   NUGET_XMLDOC_MODE: skip
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+  WORKFLOW_BUILD_SLN: Base32768.sln
 
 jobs:
   format:
@@ -52,8 +53,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
       - name: Install dependencies
-        run: dotnet restore
+        run: dotnet restore ${{ env.WORKFLOW_BUILD_SLN }}
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build ${{ env.WORKFLOW_BUILD_SLN }} --no-restore
       - name: Test
-        run: dotnet test --no-restore --verbosity normal
+        run: dotnet test ${{ env.WORKFLOW_BUILD_SLN }} --no-restore --verbosity normal
