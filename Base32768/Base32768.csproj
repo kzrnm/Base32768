@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-    <LangVersion>7</LangVersion>
+    <LangVersion>9</LangVersion>
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
 
     <SignAssembly>True</SignAssembly>
@@ -20,4 +20,28 @@
 
     <Version>1.0.3-alpha.1</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Base32768.BuildLookup.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Base32768.BuildLookup.tt</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Base32768.BuildLookup.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Base32768.BuildLookup.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Base32768.BuildLookup.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Base32768.BuildLookup.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
