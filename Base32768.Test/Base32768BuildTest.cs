@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 
@@ -185,6 +186,9 @@ namespace Kzrnm.Convert.Base32768
             string.Join("", keys).IsNormalized().Should().BeTrue();
             keys.Reverse();
             string.Join("", keys).IsNormalized().Should().BeTrue();
+
+            lookupD.Take(Base32768.ZBits15Start).Should().OnlyContain(t => t.numZBits == 0 || t.numZBits == 7);
+            lookupD.Skip(Base32768.ZBits15Start).Should().OnlyContain(t => t.numZBits == 0 || t.numZBits == 15);
         }
 
     }
