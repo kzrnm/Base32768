@@ -175,7 +175,7 @@ namespace Kzrnm.Convert.Base32768
             var lookupD = Base32768.lookupD;
             var keys = new List<char>();
             for (int i = 0; i < lookupD.Length; i++)
-                if (lookupD[i].numZBits == 7 || lookupD[i].numZBits == 15)
+                if (lookupD[i].HasValue)
                     keys.Add((char)i);
 
             keys.Sort();
@@ -186,9 +186,6 @@ namespace Kzrnm.Convert.Base32768
             string.Join("", keys).IsNormalized().Should().BeTrue();
             keys.Reverse();
             string.Join("", keys).IsNormalized().Should().BeTrue();
-
-            lookupD.Take(Base32768.ZBits15Start).Should().OnlyContain(t => t.numZBits == 0 || t.numZBits == 7);
-            lookupD.Skip(Base32768.ZBits15Start).Should().OnlyContain(t => t.numZBits == 0 || t.numZBits == 15);
         }
 
     }

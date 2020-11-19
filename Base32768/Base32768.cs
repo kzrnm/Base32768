@@ -39,12 +39,11 @@ namespace Kzrnm.Convert.Base32768
 
         internal const char ZBits15Start = '\u04a0';
 
-        internal static readonly (int numZBits, short z)[] lookupD
-            = new (int numZBits, short z)[0xA860];
+        internal static readonly short?[] lookupD = new short?[0xA860];
         internal static readonly char[] lookupE7 = Build(
             new (char from, char to)[] {
             ('\u0180', '\u01a0'), ('\u0240', '\u02a0'),
-        }, 128, 1);
+        }, 128);
         internal static readonly char[] lookupE15 = Build(
             new (char from, char to)[] {
             ('\u04a0', '\u04c0'), ('\u0500', '\u0520'), ('\u0680', '\u06c0'), ('\u0760', '\u07a0'),
@@ -60,16 +59,15 @@ namespace Kzrnm.Convert.Base32768
             ('\u2ea0', '\u2ee0'), ('\u31c0', '\u31e0'), ('\u3400', '\u4da0'), ('\u4dc0', '\u9fc0'),
             ('\ua000', '\ua480'), ('\ua4a0', '\ua4c0'), ('\ua500', '\ua600'), ('\ua640', '\ua660'),
             ('\ua6a0', '\ua6e0'), ('\ua700', '\ua760'), ('\ua780', '\ua7a0'), ('\ua840', '\ua860'),
-        }, 32768, 0);
-        private static char[] Build((char from, char to)[] pairString, int size, int r)
+        }, 32768);
+        private static char[] Build((char from, char to)[] pairString, int size)
         {
-            var numZBits = BITS_PER_CHAR - BITS_PER_BYTE * r;
             var encodeRepertoire = new char[size];
             short ix = 0;
             foreach (var (from, to) in pairString)
                 for (char i = from; i < to; i++)
                 {
-                    lookupD[i] = (numZBits, ix);
+                    lookupD[i] = ix;
                     encodeRepertoire[ix++] = i;
                 }
             System.Diagnostics.Debug.Assert(size == ix);
@@ -141,15 +139,18 @@ namespace Kzrnm.Convert.Base32768
             for (int i = 0; i < str.Length; i++)
             {
                 var chr = str[i];
-                var (numZBits, z) = lookupD[chr];
 
-                if (chr < ZBits15Start)
+                int numZBits = 15;
+                if (lookupD[chr] is short z)
                 {
-                    if (i + 1 != str.Length || numZBits != 7)
-                        throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                    if (chr < ZBits15Start)
+                    {
+                        if (i + 1 != str.Length)
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        numZBits = 7;
+                    }
                 }
-
-                if (numZBits == 0)
+                else
                     throw new FormatException($"Unrecognised Base32768 character: {chr}");
 
                 do
