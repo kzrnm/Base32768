@@ -36,12 +36,17 @@ namespace Kzrnm.Convert.Base32768
     {
         internal const int BITS_PER_CHAR = 15;// Base32768 is a 15-bit encoding
         internal const int BITS_PER_BYTE = 8;
-        internal static readonly (int numZBits, char z)[] lookupD
-            = new (int numZBits, char z)[0xA860];
-        internal static readonly char[] lookupE7 = Build(new (char from, char to)[] {
+
+        internal const char ZBits15Start = '\u04a0';
+
+        internal static readonly (int numZBits, short z)[] lookupD
+            = new (int numZBits, short z)[0xA860];
+        internal static readonly char[] lookupE7 = Build(
+            new (char from, char to)[] {
             ('\u0180', '\u01a0'), ('\u0240', '\u02a0'),
         }, 128, 1);
-        internal static readonly char[] lookupE15 = Build(new (char from, char to)[] {
+        internal static readonly char[] lookupE15 = Build(
+            new (char from, char to)[] {
             ('\u04a0', '\u04c0'), ('\u0500', '\u0520'), ('\u0680', '\u06c0'), ('\u0760', '\u07a0'),
             ('\u07c0', '\u07e0'), ('\u1000', '\u1020'), ('\u10a0', '\u10c0'), ('\u1100', '\u1160'),
             ('\u1180', '\u11a0'), ('\u11e0', '\u1240'), ('\u1260', '\u1280'), ('\u12e0', '\u1300'),
@@ -60,11 +65,11 @@ namespace Kzrnm.Convert.Base32768
         {
             var numZBits = BITS_PER_CHAR - BITS_PER_BYTE * r;
             var encodeRepertoire = new char[size];
-            var ix = 0;
+            short ix = 0;
             foreach (var (from, to) in pairString)
                 for (char i = from; i < to; i++)
                 {
-                    lookupD[i] = (numZBits, (char)ix);
+                    lookupD[i] = (numZBits, ix);
                     encodeRepertoire[ix++] = i;
                 }
             System.Diagnostics.Debug.Assert(size == ix);
@@ -127,7 +132,7 @@ namespace Kzrnm.Convert.Base32768
             if (length == 0)
                 return Array.Empty<byte>();
 
-            if (str[str.Length - 1] < 1184)
+            if (str[str.Length - 1] < ZBits15Start)
                 --length;
             var res = new byte[length];
             var numUint8s = 0;
@@ -136,19 +141,16 @@ namespace Kzrnm.Convert.Base32768
             for (int i = 0; i < str.Length; i++)
             {
                 var chr = str[i];
-
                 var (numZBits, z) = lookupD[chr];
-                switch (numZBits)
+
+                if (chr < ZBits15Start)
                 {
-                    case 15:
-                        break;
-                    case 7:
-                        if (i != str.Length - 1)
-                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
-                        break;
-                    default:
+                    if (i + 1 != str.Length || numZBits != 7)
                         throw new FormatException($"Unrecognised Base32768 character: {chr}");
                 }
+
+                if (numZBits == 0)
+                    throw new FormatException($"Unrecognised Base32768 character: {chr}");
 
                 do
                 {
