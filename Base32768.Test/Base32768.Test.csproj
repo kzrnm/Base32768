@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-
+    <TargetFrameworks>net46;net5.0</TargetFrameworks>
+    <LangVersion>8</LangVersion>
     <IsPackable>false</IsPackable>
-
     <RootNamespace>Kzrnm.Convert.Base32768</RootNamespace>
-
     <SignAssembly>true</SignAssembly>
-
     <AssemblyOriginatorKeyFile>..\Base32768\key.snk</AssemblyOriginatorKeyFile>
+    <NoWarn>$(NoWarn);IDE0057</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
