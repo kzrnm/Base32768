@@ -7,19 +7,23 @@ namespace Kzrnm.Convert.Base32768
 {
     public static class TestUtil
     {
-        public static IReadOnlyDictionary<string, byte[]> TestData = LoadTestData();
+        public static readonly IReadOnlyDictionary<string, byte[]> TestData = LoadTestData();
         private static Dictionary<string, byte[]> LoadTestData()
         {
             var dic = new Dictionary<string, byte[]>();
-            var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-            foreach (var path in Directory.EnumerateFiles(dir, "test-data/*", SearchOption.AllDirectories))
+            foreach (var path in Directory.EnumerateFiles(".", "test-data/*", SearchOption.AllDirectories))
             {
-                var name = path[dir.Length..].Replace('\\', '/').TrimStart('/');
+                var name = path.Substring(1).Replace('\\', '/').TrimStart('/');
                 dic[name] = File.ReadAllBytes(path);
             }
             return dic;
         }
-
+#if NET46
+        public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> pair, out TKey key, out TValue value)
+        {
+            key = pair.Key;
+            value = pair.Value;
+        }
+#endif
     }
 }

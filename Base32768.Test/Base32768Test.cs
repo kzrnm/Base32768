@@ -10,15 +10,24 @@ namespace Kzrnm.Convert.Base32768
         [Fact]
         public void Simple255()
         {
+            Base32768.Encode(new byte[] { 255 }).Should().Be("ꡟ");
+            Base32768.Encode(new byte[] { 255, 255 }).Should().Be("ꡟʟ");
+            Base32768.Encode(new byte[] { 255, 255, 255 }).Should().Be("ꡟꡟ");
+        }
+
+#if NET5_0
+        [Fact]
+        public void Simple255Span()
+        {
             Base32768.Encode(stackalloc byte[] { 255 }).Should().Be("ꡟ");
             Base32768.Encode(stackalloc byte[] { 255, 255 }).Should().Be("ꡟʟ");
             Base32768.Encode(stackalloc byte[] { 255, 255, 255 }).Should().Be("ꡟꡟ");
         }
+#endif
 
         public static TheoryData EnumerateRandomBytes()
         {
             var rnd = new Random();
-
             var theoryData = new TheoryData<byte[]>();
             for (int i = 0; i < 1000; i++)
             {
@@ -34,11 +43,13 @@ namespace Kzrnm.Convert.Base32768
         public void RandomBytes(byte[] bytes)
         {
             var str = Base32768.Encode(bytes);
-            Base32768.Encode(bytes.AsSpan()).Should().Be(str);
             str.IsNormalized().Should().BeTrue();
 
             Base32768.Decode(str).Should().Equal(bytes);
+#if NET5_0
+            Base32768.Encode(bytes.AsSpan()).Should().Be(str);
             Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
+#endif
         }
 
         public static TheoryData EnumeratePairTestData()
