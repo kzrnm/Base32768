@@ -34,7 +34,7 @@ jobs:
       - name: Format
         run: dotnet format --check
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v2
