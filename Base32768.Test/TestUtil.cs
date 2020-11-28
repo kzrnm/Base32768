@@ -18,7 +18,7 @@ namespace Kzrnm.Convert.Base32768
             }
             return dic;
         }
-#if NET46
+#if NETFRAMEWORK
         public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> pair, out TKey key, out TValue value)
         {
             key = pair.Key;

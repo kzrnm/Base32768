@@ -131,10 +131,10 @@ namespace Kzrnm.Convert.Base32768
             var length = str.Length * BITS_PER_CHAR / BITS_PER_BYTE;
             if (length == 0)
                 return
-#if NETSTANDARD2_1
-                    Array.Empty<byte>();
-#else
+#if NETSTANDARD1_0
                     new byte[0];
+#else
+                    Array.Empty<byte>();
 #endif
 
             if (str[str.Length - 1] < ZBits15Start)
