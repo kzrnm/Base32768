@@ -18,7 +18,7 @@
     <PackageProjectUrl>https://github.com/naminodarie/Base32768</PackageProjectUrl>
     <RepositoryUrl>https://github.com/naminodarie/Base32768</RepositoryUrl>
 
-    <Version>1.0.6-beta.1</Version>
+    <Version>1.0.6</Version>
 
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
