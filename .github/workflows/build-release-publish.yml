@@ -112,7 +112,7 @@ jobs:
           tag: ${{ steps.tag-version.outputs.new_tag }}
           name: Version ${{ needs.get-version.outputs.version }}
           body: ${{ steps.tag_version.outputs.changelog }}
-          artifacts: "./dist/*.nupkg"
+          artifacts: "./dist/*.nupkg,./dist/*.snupkg"
           prerelease: ${{ needs.get-version.outputs.is-prerelease }}
   publish:
     runs-on: windows-latest

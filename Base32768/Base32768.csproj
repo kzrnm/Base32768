@@ -18,13 +18,19 @@
     <PackageProjectUrl>https://github.com/naminodarie/Base32768</PackageProjectUrl>
     <RepositoryUrl>https://github.com/naminodarie/Base32768</RepositoryUrl>
 
-    <Version>1.0.6</Version>
+    <Version>1.0.7-beta.2</Version>
 
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
   <ItemGroup>
+    <None Include="../LICENSE" Pack="true" PackagePath="" />
+
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
