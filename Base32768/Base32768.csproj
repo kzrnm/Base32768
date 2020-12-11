@@ -17,9 +17,9 @@
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/naminodarie/Base32768</PackageProjectUrl>
     <RepositoryUrl>https://github.com/naminodarie/Base32768</RepositoryUrl>
+    <PackageReleaseNotes>https://github.com/naminodarie/Base32768/blob/master/CHANGELOG.md</PackageReleaseNotes>
 
     <Version>1.0.7</Version>
-
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
