@@ -15,6 +15,14 @@ namespace Kzrnm.Convert.Base32768
             Base32768.Encode(new byte[] { 255, 255, 255 }).Should().Be("ꡟꡟ");
         }
 
+        [Fact]
+        public void Simple255Stream()
+        {
+            Base32768.Encode(new byte[] { 255 }.ToStream()).Should().Be("ꡟ");
+            Base32768.Encode(new byte[] { 255, 255 }.ToStream()).Should().Be("ꡟʟ");
+            Base32768.Encode(new byte[] { 255, 255, 255 }.ToStream()).Should().Be("ꡟꡟ");
+        }
+
 #if NET5_0
         [Fact]
         public void Simple255Span()
@@ -45,6 +53,7 @@ namespace Kzrnm.Convert.Base32768
             var str = Base32768.Encode(bytes);
             str.IsNormalized().Should().BeTrue();
 
+            Base32768.Encode(bytes.ToStream()).Should().Be(str);
             Base32768.Decode(str).Should().Equal(bytes);
 #if NET5_0
             Base32768.Encode(bytes.AsSpan()).Should().Be(str);
@@ -74,6 +83,11 @@ namespace Kzrnm.Convert.Base32768
         {
             Base32768.Encode(bytes).Should().Be(str);
             Base32768.Decode(str).Should().Equal(bytes);
+#if NET5_0
+            Base32768.Encode(bytes.ToStream()).Should().Be(str);
+            Base32768.Encode(bytes.AsSpan()).Should().Be(str);
+            Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
+#endif
         }
 
         public static TheoryData EnumerateTestDataBad()
@@ -96,6 +110,9 @@ namespace Kzrnm.Convert.Base32768
         public void Bad(string str)
         {
             str.Invoking(str => Base32768.Decode(str)).Should().Throw<FormatException>();
+#if NET5_0
+            str.Invoking(str => Base32768.Decode(str.AsSpan())).Should().Throw<FormatException>();
+#endif
         }
     }
 }

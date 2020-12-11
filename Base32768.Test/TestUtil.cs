@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 
 namespace Kzrnm.Convert.Base32768
 {
@@ -18,6 +16,9 @@ namespace Kzrnm.Convert.Base32768
             }
             return dic;
         }
+
+        public static Stream ToStream(this byte[] bytes) => new MemoryStream(bytes);
+
 #if NETFRAMEWORK
         public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> pair, out TKey key, out TValue value)
         {

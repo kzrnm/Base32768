@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 /**
 Base32768 is a binary-to-text encoding optimised for UTF-16-encoded text.
@@ -88,6 +89,49 @@ namespace Kzrnm.Convert.Base32768
             var z = 0;
             var numOBits = BITS_PER_CHAR;
             foreach (var by in bytes)
+            {
+                if (numOBits > 8)
+                {
+                    numOBits -= 8;
+                    z |= by << numOBits;
+                }
+                else
+                {
+                    z |= by >> (8 - numOBits);
+                    sb.Append(lookupE15[z]);
+                    numOBits += 7;
+                    z = (by << numOBits) & mask;
+                }
+            }
+            if (numOBits != BITS_PER_CHAR)
+            {
+                var numZBits = BITS_PER_CHAR - numOBits;
+                var c = 7 ^ (numZBits & 0b111);
+                if (numZBits > 7)
+                {
+                    z |= (1 << c) - 1;
+                    sb.Append(lookupE15[z]);
+                }
+                else
+                {
+                    z >>= 8;
+                    z |= (1 << c) - 1;
+                    sb.Append(lookupE7[z]);
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        public static string Encode(Stream stream)
+        {
+            var sb = new StringBuilder();
+
+            const int mask = (1 << 15) - 1;
+            var z = 0;
+            var numOBits = BITS_PER_CHAR;
+            int by;
+            while ((by = stream.ReadByte()) >= 0)
             {
                 if (numOBits > 8)
                 {
