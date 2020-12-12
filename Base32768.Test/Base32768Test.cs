@@ -37,9 +37,9 @@ namespace Kzrnm.Convert.Base32768
         {
             var rnd = new Random();
             var theoryData = new TheoryData<byte[]>();
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 100; i++)
             {
-                var bytes = new byte[rnd.Next(1, 100)];
+                var bytes = new byte[rnd.Next(1, 1000)];
                 rnd.NextBytes(bytes);
                 theoryData.Add(bytes);
             }
