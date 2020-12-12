@@ -77,9 +77,20 @@ namespace Kzrnm.Convert.Base32768
             return encodeRepertoire;
         }
 
+        #region Encode
+        /// <summary>
+        /// Encode a binary data to Base32768.
+        /// </summary>
+        /// <param name="bytes">original binary data</param>
+        /// <returns>Base32768 encoded data</returns>
         public static string Encode(byte[] bytes)
 #if NETSTANDARD2_1
             => Encode(bytes.AsSpan());
+        /// <summary>
+        /// Encode a binary data to Base32768.
+        /// </summary>
+        /// <param name="bytes">original binary data</param>
+        /// <returns>Base32768 encoded data</returns>
         public static string Encode(ReadOnlySpan<byte> bytes)
 #endif
         {
@@ -123,6 +134,11 @@ namespace Kzrnm.Convert.Base32768
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Encode a binary data to Base32768.
+        /// </summary>
+        /// <param name="stream">original binary data</param>
+        /// <returns>Base32768 encoded data</returns>
         public static string Encode(Stream stream)
         {
             var sb = new StringBuilder();
@@ -165,10 +181,23 @@ namespace Kzrnm.Convert.Base32768
 
             return sb.ToString();
         }
+        #endregion Encode
 
+        #region Decode
+
+        /// <summary>
+        /// Decodes a Base32768.
+        /// </summary>
+        /// <param name="str">Base32768 encoded data</param>
+        /// <returns>original binary data</returns>
         public static byte[] Decode(string str)
 #if NETSTANDARD2_1
             => Decode(str.AsSpan());
+        /// <summary>
+        /// Decodes a Base32768.
+        /// </summary>
+        /// <param name="str">Base32768 encoded data</param>
+        /// <returns>original binary data</returns>
         public static byte[] Decode(ReadOnlySpan<char> str)
 #endif
         {
@@ -225,5 +254,6 @@ namespace Kzrnm.Convert.Base32768
 
             return res;
         }
+        #endregion Decode
     }
 }
