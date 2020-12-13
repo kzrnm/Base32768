@@ -7,32 +7,74 @@ namespace Kzrnm.Convert.Base32768
 {
     public class Base32768Test
     {
-        [Fact]
-        public void Simple255()
+        public static TheoryData Simple_Data = new TheoryData<string, byte[]>
         {
-            Base32768.Encode(new byte[] { 255 }).Should().Be("ꡟ");
-            Base32768.Encode(new byte[] { 255, 255 }).Should().Be("ꡟʟ");
-            Base32768.Encode(new byte[] { 255, 255, 255 }).Should().Be("ꡟꡟ");
+            {
+                "ꡟ",
+                new byte[]{255}
+            },
+            {
+                "ꡟꡟꡟꡟꡟꡟꡟꡟꡟ",
+                new byte[]{
+                    255, 255, 255, 255,
+                    255, 255, 255, 255,
+                    255, 255, 255, 255,
+                    255, 255, 255, 255
+                }
+            },
+            {
+                "ݠ暠䙠㙐▨ᖄቢႡဟ",
+                new byte[]{
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1
+                }
+            },
+            {
+                "ݠ暠䙠㙐▨ᖄቢႡݠʟ",
+                new byte[]{
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1, 1
+                }
+            },
+            {
+                "ݠ暠䙠㙐▨ᖄቢႡݠ曟",
+                new byte[]{
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1
+                }
+            }
+        };
+
+        [Theory]
+        [MemberData(nameof(Simple_Data))]
+        public void Simple(string str, byte[] bytes)
+        {
+            Base32768.Encode(bytes).Should().Be(str);
+            Base32768.Decode(str).Should().Equal(bytes);
         }
 
-        [Fact]
-        public void Simple255Stream()
+        [Theory]
+        [MemberData(nameof(Simple_Data))]
+        public void SimpleStream(string str, byte[] bytes)
         {
-            Base32768.Encode(new byte[] { 255 }.ToStream()).Should().Be("ꡟ");
-            Base32768.Encode(new byte[] { 255, 255 }.ToStream()).Should().Be("ꡟʟ");
-            Base32768.Encode(new byte[] { 255, 255, 255 }.ToStream()).Should().Be("ꡟꡟ");
+            Base32768.Encode(bytes.ToStream()).Should().Be(str);
         }
 
 #if NET5_0
-        [Fact]
-        public void Simple255Span()
+        [Theory]
+        [MemberData(nameof(Simple_Data))]
+        public void SimpleSpan(string str, byte[] bytes)
         {
-            Base32768.Encode(stackalloc byte[] { 255 }).Should().Be("ꡟ");
-            Base32768.Encode(stackalloc byte[] { 255, 255 }).Should().Be("ꡟʟ");
-            Base32768.Encode(stackalloc byte[] { 255, 255, 255 }).Should().Be("ꡟꡟ");
+            Base32768.Encode(bytes.AsSpan()).Should().Be(str);
+            Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
         }
 #endif
-
         public static TheoryData EnumerateRandomBytes()
         {
             var rnd = new Random();
@@ -46,6 +88,7 @@ namespace Kzrnm.Convert.Base32768
             return theoryData;
         }
 
+#if !DEBUG
         [Theory]
         [MemberData(nameof(EnumerateRandomBytes))]
         public void RandomBytes(byte[] bytes)
@@ -89,6 +132,7 @@ namespace Kzrnm.Convert.Base32768
             Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
 #endif
         }
+#endif
 
         public static TheoryData EnumerateTestDataBad()
         {
