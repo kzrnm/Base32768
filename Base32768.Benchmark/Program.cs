@@ -15,6 +15,7 @@ public class BenchmarkConfig : ManualConfig
     public BenchmarkConfig()
     {
         AddDiagnoser(MemoryDiagnoser.Default);
+        AddExporter(BenchmarkDotNet.Exporters.MarkdownExporter.GitHub);
         AddJob(Job.ShortRun.WithToolchain(CsProjCoreToolchain.NetCoreApp50));
         AddJob(Job.ShortRun.WithToolchain(CsProjClassicNetToolchain.Net472));
     }

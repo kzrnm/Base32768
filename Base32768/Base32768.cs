@@ -84,19 +84,136 @@ namespace Kzrnm.Convert.Base32768
         /// <param name="bytes">original binary data</param>
         /// <returns>Base32768 encoded data</returns>
         public static string Encode(byte[] bytes)
+        {
+            var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
 #if NETSTANDARD2_1
-            => Encode(bytes.AsSpan());
+            EncodeCore(bytes, sb);
+#else
+            EncodeCore(new MemoryStream(bytes), sb);
+#endif
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Encode a binary data to Base32768.
+        /// </summary>
+        /// <param name="stream">original binary data</param>
+        /// <returns>Base32768 encoded data</returns>
+        public static string Encode(Stream stream)
+        {
+            var sb = new StringBuilder();
+            EncodeCore(stream, sb);
+            return sb.ToString();
+        }
+        private static void EncodeCore(Stream stream, StringBuilder sb)
+        {
+            const int mask = (1 << 15) - 1;
+
+            int len;
+            var bytes = new byte[15];
+            while ((len = stream.Read(bytes, 0, 15)) >= 15)
+            {
+                uint u;
+
+                u = ((uint)bytes[0] << 24) | ((uint)bytes[1] << 16) | ((uint)bytes[2] << 8) | bytes[3];
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+
+                u = (u << 30) | ((uint)bytes[4] << 22) | ((uint)bytes[5] << 14) | ((uint)bytes[6] << 6);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[7] << 13) | ((uint)bytes[8] << 5);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[9] << 12) | ((uint)bytes[10] << 4);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[11] << 11) | ((uint)bytes[12] << 3);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[13] << 10) | ((uint)bytes[14] << 2);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+            }
+
+            var z = 0;
+            var numOBits = BITS_PER_CHAR;
+            for (int i = 0; i < len; i++)
+            {
+                var by = bytes[i];
+                if (numOBits > 8)
+                {
+                    numOBits -= 8;
+                    z |= by << numOBits;
+                }
+                else
+                {
+                    z |= by >> (8 - numOBits);
+                    sb.Append(lookupE15[z]);
+                    numOBits += 7;
+                    z = (by << numOBits) & mask;
+                }
+            }
+            if (numOBits != BITS_PER_CHAR)
+            {
+                var numZBits = BITS_PER_CHAR - numOBits;
+                var c = 7 ^ (numZBits & 0b111);
+                if (numZBits > 7)
+                {
+                    z |= (1 << c) - 1;
+                    sb.Append(lookupE15[z]);
+                }
+                else
+                {
+                    z >>= 8;
+                    z |= (1 << c) - 1;
+                    sb.Append(lookupE7[z]);
+                }
+            }
+        }
+
+#if NETSTANDARD2_1
         /// <summary>
         /// Encode a binary data to Base32768.
         /// </summary>
         /// <param name="bytes">original binary data</param>
         /// <returns>Base32768 encoded data</returns>
         public static string Encode(ReadOnlySpan<byte> bytes)
-#endif
         {
             var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
-
+            EncodeCore(bytes, sb);
+            return sb.ToString();
+        }
+        private static void EncodeCore(ReadOnlySpan<byte> bytes, StringBuilder sb)
+        {
             const int mask = (1 << 15) - 1;
+
+            while (bytes.Length >= 15)
+            {
+                uint u;
+
+                u = ((uint)bytes[0] << 24) | ((uint)bytes[1] << 16) | ((uint)bytes[2] << 8) | bytes[3];
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+
+                u = (u << 30) | ((uint)bytes[4] << 22) | ((uint)bytes[5] << 14) | ((uint)bytes[6] << 6);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[7] << 13) | ((uint)bytes[8] << 5);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[9] << 12) | ((uint)bytes[10] << 4);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[11] << 11) | ((uint)bytes[12] << 3);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[13] << 10) | ((uint)bytes[14] << 2);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+                bytes = bytes[15..];
+            }
+
             var z = 0;
             var numOBits = BITS_PER_CHAR;
             foreach (var by in bytes)
@@ -130,57 +247,9 @@ namespace Kzrnm.Convert.Base32768
                     sb.Append(lookupE7[z]);
                 }
             }
-
-            return sb.ToString();
         }
+#endif
 
-        /// <summary>
-        /// Encode a binary data to Base32768.
-        /// </summary>
-        /// <param name="stream">original binary data</param>
-        /// <returns>Base32768 encoded data</returns>
-        public static string Encode(Stream stream)
-        {
-            var sb = new StringBuilder();
-
-            const int mask = (1 << 15) - 1;
-            var z = 0;
-            var numOBits = BITS_PER_CHAR;
-            int by;
-            while ((by = stream.ReadByte()) >= 0)
-            {
-                if (numOBits > 8)
-                {
-                    numOBits -= 8;
-                    z |= by << numOBits;
-                }
-                else
-                {
-                    z |= by >> (8 - numOBits);
-                    sb.Append(lookupE15[z]);
-                    numOBits += 7;
-                    z = (by << numOBits) & mask;
-                }
-            }
-            if (numOBits != BITS_PER_CHAR)
-            {
-                var numZBits = BITS_PER_CHAR - numOBits;
-                var c = 7 ^ (numZBits & 0b111);
-                if (numZBits > 7)
-                {
-                    z |= (1 << c) - 1;
-                    sb.Append(lookupE15[z]);
-                }
-                else
-                {
-                    z >>= 8;
-                    z |= (1 << c) - 1;
-                    sb.Append(lookupE7[z]);
-                }
-            }
-
-            return sb.ToString();
-        }
         #endregion Encode
 
         #region Decode
@@ -215,41 +284,111 @@ namespace Kzrnm.Convert.Base32768
             var res = new byte[length];
             var numUint8s = 0;
             var numUint8Remaining = 8;
+            int i;
 
-            for (int i = 0; i < str.Length; i++)
+            unchecked
             {
-                var chr = str[i];
-
-                int numZBits = 15;
-                if (lookupD[chr] is ushort z)
+                for (i = 0; i + 9 < str.Length;)
                 {
-                    if (chr < ZBits15Start)
                     {
-                        if (i + 1 != str.Length)
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
                             throw new FormatException($"Unrecognised Base32768 character: {chr}");
-                        numZBits = 7;
+                        res[numUint8s++] |= (byte)(z >> 7);
+                        res[numUint8s] = (byte)(z << 1);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 14);
+                        res[numUint8s++] = (byte)(z >> 6);
+                        res[numUint8s] = (byte)(z << 2);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 13);
+                        res[numUint8s++] = (byte)(z >> 5);
+                        res[numUint8s] = (byte)(z << 3);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 12);
+                        res[numUint8s++] = (byte)(z >> 4);
+                        res[numUint8s] = (byte)(z << 4);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 11);
+                        res[numUint8s++] = (byte)(z >> 3);
+                        res[numUint8s] = (byte)(z << 5);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 10);
+                        res[numUint8s++] = (byte)(z >> 2);
+                        res[numUint8s] = (byte)(z << 6);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 9);
+                        res[numUint8s++] = (byte)(z >> 1);
+                        res[numUint8s] = (byte)(z << 7);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 8);
+                        res[numUint8s++] = (byte)z;
                     }
                 }
-                else
-                    throw new FormatException($"Unrecognised Base32768 character: {chr}");
 
-                do
+                for (; i < str.Length; i++)
                 {
-                    var mask = (1 << numZBits) - 1;
-                    var zz = z & mask;
-                    if (numZBits < numUint8Remaining)
+                    var chr = str[i];
+
+                    int numZBits = 15;
+                    if (lookupD[chr] is ushort z)
                     {
-                        numUint8Remaining -= numZBits;
-                        res[numUint8s] |= (byte)(zz << numUint8Remaining);
-                        numZBits = 0;
+                        if (chr < ZBits15Start)
+                        {
+                            if (i + 1 != str.Length)
+                                throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                            numZBits = 7;
+                        }
                     }
                     else
+                        throw new FormatException($"Unrecognised Base32768 character: {chr}");
+
+                    do
                     {
-                        numZBits -= numUint8Remaining;
-                        res[numUint8s++] |= (byte)(zz >> numZBits);
-                        numUint8Remaining = 8;
-                    }
-                } while (numZBits > 0 && numUint8s < res.Length);
+                        var mask = (1 << numZBits) - 1;
+                        var zz = z & mask;
+                        if (numZBits < numUint8Remaining)
+                        {
+                            numUint8Remaining -= numZBits;
+                            res[numUint8s] |= (byte)(zz << numUint8Remaining);
+                            numZBits = 0;
+                        }
+                        else
+                        {
+                            numZBits -= numUint8Remaining;
+                            res[numUint8s++] |= (byte)(zz >> numZBits);
+                            numUint8Remaining = 8;
+                        }
+                    } while (numZBits > 0 && numUint8s < res.Length);
+                }
             }
 
             return res;
