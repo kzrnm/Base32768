@@ -84,53 +84,13 @@ namespace Kzrnm.Convert.Base32768
         /// <param name="bytes">original binary data</param>
         /// <returns>Base32768 encoded data</returns>
         public static string Encode(byte[] bytes)
-#if NETSTANDARD2_1
-            => Encode(bytes.AsSpan());
-        /// <summary>
-        /// Encode a binary data to Base32768.
-        /// </summary>
-        /// <param name="bytes">original binary data</param>
-        /// <returns>Base32768 encoded data</returns>
-        public static string Encode(ReadOnlySpan<byte> bytes)
-#endif
         {
             var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
-
-            const int mask = (1 << 15) - 1;
-            var z = 0;
-            var numOBits = BITS_PER_CHAR;
-            foreach (var by in bytes)
-            {
-                if (numOBits > 8)
-                {
-                    numOBits -= 8;
-                    z |= by << numOBits;
-                }
-                else
-                {
-                    z |= by >> (8 - numOBits);
-                    sb.Append(lookupE15[z]);
-                    numOBits += 7;
-                    z = (by << numOBits) & mask;
-                }
-            }
-            if (numOBits != BITS_PER_CHAR)
-            {
-                var numZBits = BITS_PER_CHAR - numOBits;
-                var c = 7 ^ (numZBits & 0b111);
-                if (numZBits > 7)
-                {
-                    z |= (1 << c) - 1;
-                    sb.Append(lookupE15[z]);
-                }
-                else
-                {
-                    z >>= 8;
-                    z |= (1 << c) - 1;
-                    sb.Append(lookupE7[z]);
-                }
-            }
-
+#if NETSTANDARD2_1
+            EncodeCore(bytes, sb);
+#else
+            EncodeCore(new MemoryStream(bytes), sb);
+#endif
             return sb.ToString();
         }
 
@@ -142,45 +102,160 @@ namespace Kzrnm.Convert.Base32768
         public static string Encode(Stream stream)
         {
             var sb = new StringBuilder();
-
-            const int mask = (1 << 15) - 1;
-            var z = 0;
-            var numOBits = BITS_PER_CHAR;
-            int by;
-            while ((by = stream.ReadByte()) >= 0)
-            {
-                if (numOBits > 8)
-                {
-                    numOBits -= 8;
-                    z |= by << numOBits;
-                }
-                else
-                {
-                    z |= by >> (8 - numOBits);
-                    sb.Append(lookupE15[z]);
-                    numOBits += 7;
-                    z = (by << numOBits) & mask;
-                }
-            }
-            if (numOBits != BITS_PER_CHAR)
-            {
-                var numZBits = BITS_PER_CHAR - numOBits;
-                var c = 7 ^ (numZBits & 0b111);
-                if (numZBits > 7)
-                {
-                    z |= (1 << c) - 1;
-                    sb.Append(lookupE15[z]);
-                }
-                else
-                {
-                    z >>= 8;
-                    z |= (1 << c) - 1;
-                    sb.Append(lookupE7[z]);
-                }
-            }
-
+            EncodeCore(stream, sb);
             return sb.ToString();
         }
+        private static void EncodeCore(Stream stream, StringBuilder sb)
+        {
+            const int mask = (1 << 15) - 1;
+            static void EncodeLast(byte[] bytes, int len, StringBuilder sb)
+            {
+                var z = 0;
+                var numOBits = BITS_PER_CHAR;
+                for (int i = 0; i < len; i++)
+                {
+                    var by = bytes[i];
+                    if (numOBits > 8)
+                    {
+                        numOBits -= 8;
+                        z |= by << numOBits;
+                    }
+                    else
+                    {
+                        z |= by >> (8 - numOBits);
+                        sb.Append(lookupE15[z]);
+                        numOBits += 7;
+                        z = (by << numOBits) & mask;
+                    }
+                }
+                if (numOBits != BITS_PER_CHAR)
+                {
+                    var numZBits = BITS_PER_CHAR - numOBits;
+                    var c = 7 ^ (numZBits & 0b111);
+                    if (numZBits > 7)
+                    {
+                        z |= (1 << c) - 1;
+                        sb.Append(lookupE15[z]);
+                    }
+                    else
+                    {
+                        z >>= 8;
+                        z |= (1 << c) - 1;
+                        sb.Append(lookupE7[z]);
+                    }
+                }
+            }
+
+            int len;
+            var bytes = new byte[15];
+            while ((len = stream.Read(bytes, 0, 15)) >= 15)
+            {
+                uint u;
+
+                u = ((uint)bytes[0] << 24) | ((uint)bytes[1] << 16) | ((uint)bytes[2] << 8) | bytes[3];
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+
+                u = (u << 30) | ((uint)bytes[4] << 22) | ((uint)bytes[5] << 14) | ((uint)bytes[6] << 6);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[7] << 13) | ((uint)bytes[8] << 5);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[9] << 12) | ((uint)bytes[10] << 4);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[11] << 11) | ((uint)bytes[12] << 3);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[13] << 10) | ((uint)bytes[14] << 2);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+            }
+            EncodeLast(bytes, len, sb);
+        }
+
+#if NETSTANDARD2_1
+        /// <summary>
+        /// Encode a binary data to Base32768.
+        /// </summary>
+        /// <param name="bytes">original binary data</param>
+        /// <returns>Base32768 encoded data</returns>
+        public static string Encode(ReadOnlySpan<byte> bytes)
+        {
+            var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
+            EncodeCore(bytes, sb);
+            return sb.ToString();
+        }
+        private static void EncodeCore(ReadOnlySpan<byte> bytes, StringBuilder sb)
+        {
+            const int mask = (1 << 15) - 1;
+            static void EncodeLast(ReadOnlySpan<byte> bytes, StringBuilder sb)
+            {
+                var z = 0;
+                var numOBits = BITS_PER_CHAR;
+                foreach (var by in bytes)
+                {
+                    if (numOBits > 8)
+                    {
+                        numOBits -= 8;
+                        z |= by << numOBits;
+                    }
+                    else
+                    {
+                        z |= by >> (8 - numOBits);
+                        sb.Append(lookupE15[z]);
+                        numOBits += 7;
+                        z = (by << numOBits) & mask;
+                    }
+                }
+                if (numOBits != BITS_PER_CHAR)
+                {
+                    var numZBits = BITS_PER_CHAR - numOBits;
+                    var c = 7 ^ (numZBits & 0b111);
+                    if (numZBits > 7)
+                    {
+                        z |= (1 << c) - 1;
+                        sb.Append(lookupE15[z]);
+                    }
+                    else
+                    {
+                        z >>= 8;
+                        z |= (1 << c) - 1;
+                        sb.Append(lookupE7[z]);
+                    }
+                }
+            }
+
+            while (bytes.Length >= 15)
+            {
+                uint u;
+
+                u = ((uint)bytes[0] << 24) | ((uint)bytes[1] << 16) | ((uint)bytes[2] << 8) | bytes[3];
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+
+                u = (u << 30) | ((uint)bytes[4] << 22) | ((uint)bytes[5] << 14) | ((uint)bytes[6] << 6);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[7] << 13) | ((uint)bytes[8] << 5);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[9] << 12) | ((uint)bytes[10] << 4);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[11] << 11) | ((uint)bytes[12] << 3);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+
+                u = (u << 15) | ((uint)bytes[13] << 10) | ((uint)bytes[14] << 2);
+                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+                bytes = bytes[15..];
+            }
+            EncodeLast(bytes, sb);
+        }
+#endif
+
         #endregion Encode
 
         #region Decode
