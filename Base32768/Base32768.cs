@@ -108,43 +108,6 @@ namespace Kzrnm.Convert.Base32768
         private static void EncodeCore(Stream stream, StringBuilder sb)
         {
             const int mask = (1 << 15) - 1;
-            static void EncodeLast(byte[] bytes, int len, StringBuilder sb)
-            {
-                var z = 0;
-                var numOBits = BITS_PER_CHAR;
-                for (int i = 0; i < len; i++)
-                {
-                    var by = bytes[i];
-                    if (numOBits > 8)
-                    {
-                        numOBits -= 8;
-                        z |= by << numOBits;
-                    }
-                    else
-                    {
-                        z |= by >> (8 - numOBits);
-                        sb.Append(lookupE15[z]);
-                        numOBits += 7;
-                        z = (by << numOBits) & mask;
-                    }
-                }
-                if (numOBits != BITS_PER_CHAR)
-                {
-                    var numZBits = BITS_PER_CHAR - numOBits;
-                    var c = 7 ^ (numZBits & 0b111);
-                    if (numZBits > 7)
-                    {
-                        z |= (1 << c) - 1;
-                        sb.Append(lookupE15[z]);
-                    }
-                    else
-                    {
-                        z >>= 8;
-                        z |= (1 << c) - 1;
-                        sb.Append(lookupE7[z]);
-                    }
-                }
-            }
 
             int len;
             var bytes = new byte[15];
@@ -172,7 +135,41 @@ namespace Kzrnm.Convert.Base32768
                 sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
                 sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
             }
-            EncodeLast(bytes, len, sb);
+
+            var z = 0;
+            var numOBits = BITS_PER_CHAR;
+            for (int i = 0; i < len; i++)
+            {
+                var by = bytes[i];
+                if (numOBits > 8)
+                {
+                    numOBits -= 8;
+                    z |= by << numOBits;
+                }
+                else
+                {
+                    z |= by >> (8 - numOBits);
+                    sb.Append(lookupE15[z]);
+                    numOBits += 7;
+                    z = (by << numOBits) & mask;
+                }
+            }
+            if (numOBits != BITS_PER_CHAR)
+            {
+                var numZBits = BITS_PER_CHAR - numOBits;
+                var c = 7 ^ (numZBits & 0b111);
+                if (numZBits > 7)
+                {
+                    z |= (1 << c) - 1;
+                    sb.Append(lookupE15[z]);
+                }
+                else
+                {
+                    z >>= 8;
+                    z |= (1 << c) - 1;
+                    sb.Append(lookupE7[z]);
+                }
+            }
         }
 
 #if NETSTANDARD2_1
@@ -190,42 +187,6 @@ namespace Kzrnm.Convert.Base32768
         private static void EncodeCore(ReadOnlySpan<byte> bytes, StringBuilder sb)
         {
             const int mask = (1 << 15) - 1;
-            static void EncodeLast(ReadOnlySpan<byte> bytes, StringBuilder sb)
-            {
-                var z = 0;
-                var numOBits = BITS_PER_CHAR;
-                foreach (var by in bytes)
-                {
-                    if (numOBits > 8)
-                    {
-                        numOBits -= 8;
-                        z |= by << numOBits;
-                    }
-                    else
-                    {
-                        z |= by >> (8 - numOBits);
-                        sb.Append(lookupE15[z]);
-                        numOBits += 7;
-                        z = (by << numOBits) & mask;
-                    }
-                }
-                if (numOBits != BITS_PER_CHAR)
-                {
-                    var numZBits = BITS_PER_CHAR - numOBits;
-                    var c = 7 ^ (numZBits & 0b111);
-                    if (numZBits > 7)
-                    {
-                        z |= (1 << c) - 1;
-                        sb.Append(lookupE15[z]);
-                    }
-                    else
-                    {
-                        z >>= 8;
-                        z |= (1 << c) - 1;
-                        sb.Append(lookupE7[z]);
-                    }
-                }
-            }
 
             while (bytes.Length >= 15)
             {
@@ -252,7 +213,40 @@ namespace Kzrnm.Convert.Base32768
                 sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
                 bytes = bytes[15..];
             }
-            EncodeLast(bytes, sb);
+
+            var z = 0;
+            var numOBits = BITS_PER_CHAR;
+            foreach (var by in bytes)
+            {
+                if (numOBits > 8)
+                {
+                    numOBits -= 8;
+                    z |= by << numOBits;
+                }
+                else
+                {
+                    z |= by >> (8 - numOBits);
+                    sb.Append(lookupE15[z]);
+                    numOBits += 7;
+                    z = (by << numOBits) & mask;
+                }
+            }
+            if (numOBits != BITS_PER_CHAR)
+            {
+                var numZBits = BITS_PER_CHAR - numOBits;
+                var c = 7 ^ (numZBits & 0b111);
+                if (numZBits > 7)
+                {
+                    z |= (1 << c) - 1;
+                    sb.Append(lookupE15[z]);
+                }
+                else
+                {
+                    z >>= 8;
+                    z |= (1 << c) - 1;
+                    sb.Append(lookupE7[z]);
+                }
+            }
         }
 #endif
 
@@ -290,41 +284,111 @@ namespace Kzrnm.Convert.Base32768
             var res = new byte[length];
             var numUint8s = 0;
             var numUint8Remaining = 8;
+            int i;
 
-            for (int i = 0; i < str.Length; i++)
+            unchecked
             {
-                var chr = str[i];
-
-                int numZBits = 15;
-                if (lookupD[chr] is ushort z)
+                for (i = 0; i + 9 < str.Length;)
                 {
-                    if (chr < ZBits15Start)
                     {
-                        if (i + 1 != str.Length)
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
                             throw new FormatException($"Unrecognised Base32768 character: {chr}");
-                        numZBits = 7;
+                        res[numUint8s++] |= (byte)(z >> 7);
+                        res[numUint8s] = (byte)(z << 1);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 14);
+                        res[numUint8s++] = (byte)(z >> 6);
+                        res[numUint8s] = (byte)(z << 2);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 13);
+                        res[numUint8s++] = (byte)(z >> 5);
+                        res[numUint8s] = (byte)(z << 3);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 12);
+                        res[numUint8s++] = (byte)(z >> 4);
+                        res[numUint8s] = (byte)(z << 4);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 11);
+                        res[numUint8s++] = (byte)(z >> 3);
+                        res[numUint8s] = (byte)(z << 5);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 10);
+                        res[numUint8s++] = (byte)(z >> 2);
+                        res[numUint8s] = (byte)(z << 6);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 9);
+                        res[numUint8s++] = (byte)(z >> 1);
+                        res[numUint8s] = (byte)(z << 7);
+                    }
+                    {
+                        var chr = str[i++];
+                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
+                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                        res[numUint8s++] |= (byte)(z >> 8);
+                        res[numUint8s++] = (byte)z;
                     }
                 }
-                else
-                    throw new FormatException($"Unrecognised Base32768 character: {chr}");
 
-                do
+                for (; i < str.Length; i++)
                 {
-                    var mask = (1 << numZBits) - 1;
-                    var zz = z & mask;
-                    if (numZBits < numUint8Remaining)
+                    var chr = str[i];
+
+                    int numZBits = 15;
+                    if (lookupD[chr] is ushort z)
                     {
-                        numUint8Remaining -= numZBits;
-                        res[numUint8s] |= (byte)(zz << numUint8Remaining);
-                        numZBits = 0;
+                        if (chr < ZBits15Start)
+                        {
+                            if (i + 1 != str.Length)
+                                throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                            numZBits = 7;
+                        }
                     }
                     else
+                        throw new FormatException($"Unrecognised Base32768 character: {chr}");
+
+                    do
                     {
-                        numZBits -= numUint8Remaining;
-                        res[numUint8s++] |= (byte)(zz >> numZBits);
-                        numUint8Remaining = 8;
-                    }
-                } while (numZBits > 0 && numUint8s < res.Length);
+                        var mask = (1 << numZBits) - 1;
+                        var zz = z & mask;
+                        if (numZBits < numUint8Remaining)
+                        {
+                            numUint8Remaining -= numZBits;
+                            res[numUint8s] |= (byte)(zz << numUint8Remaining);
+                            numZBits = 0;
+                        }
+                        else
+                        {
+                            numZBits -= numUint8Remaining;
+                            res[numUint8s++] |= (byte)(zz >> numZBits);
+                            numUint8Remaining = 8;
+                        }
+                    } while (numZBits > 0 && numUint8s < res.Length);
+                }
             }
 
             return res;
