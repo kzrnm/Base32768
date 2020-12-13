@@ -3,6 +3,7 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Toolchains.CsProj;
 using Kzrnm.Convert.Base32768;
 using System;
 
@@ -14,7 +15,8 @@ public class BenchmarkConfig : ManualConfig
     public BenchmarkConfig()
     {
         AddDiagnoser(MemoryDiagnoser.Default);
-        AddJob(Job.ShortRun);
+        AddJob(Job.ShortRun.WithToolchain(CsProjCoreToolchain.NetCoreApp50));
+        AddJob(Job.ShortRun.WithToolchain(CsProjClassicNetToolchain.Net472));
     }
 }
 
@@ -22,7 +24,7 @@ public class BenchmarkConfig : ManualConfig
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByMethod)]
 public class Base32768Benchmark
 {
-    [Params(1000, 10000, 100000)]
+    [Params(1000, 100000)]
     public int N;
 
     public byte[] bytes;
