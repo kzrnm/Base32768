@@ -94,7 +94,7 @@ jobs:
 
   new-version-only:
     runs-on: ubuntu-latest
-    needs: [get-version, build]
+    needs: [get-version, build, format]
     if: ${{ needs.get-version.outputs.is-new == 'true' }}
     steps:
       - run: echo "new-version"

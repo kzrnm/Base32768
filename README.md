@@ -1,7 +1,7 @@
 # Base32768
 
 [![NuGet version (Base32768)](https://img.shields.io/nuget/v/Base32768.svg?style=flat-square)](https://www.nuget.org/packages/Base32768/)
-![test](https://github.com/naminodarie/Base32768/workflows/test/badge.svg?branch=master)
+![test](https://github.com/naminodarie/Base32768/workflows/Build-Release-Publish/badge.svg?branch=master)
 
 Base32768 is a binary encoding optimised for UTF-16-encoded text.
 
