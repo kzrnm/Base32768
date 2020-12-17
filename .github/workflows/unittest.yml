@@ -1,15 +1,8 @@
 name: test
 
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - ".github/workflows/**"
-      - "Base32768.Test/test-data/**"
-      - "**.cs"
-      - "!**.md"
   pull_request:
+    types: [opened, synchronize]
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -27,13 +20,12 @@ jobs:
       - name: Install dotnet-format
         run: dotnet tool install --global dotnet-format
       - name: Format
-        run: dotnet format --check
+        run: dotnet format ${{ env.WORKFLOW_BUILD_SLN }} --check
   test:
     runs-on: windows-latest
-
     steps:
       - uses: actions/checkout@v2
-      - name: Setup .NET Core SDK
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 5.0.x
