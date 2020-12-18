@@ -20,6 +20,7 @@
     <PackageReleaseNotes>https://github.com/naminodarie/Base32768/blob/master/CHANGELOG.md</PackageReleaseNotes>
 
     <Version>1.0.8</Version>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

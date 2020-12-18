@@ -126,7 +126,7 @@ jobs:
           artifacts: "./dist/*.nupkg,./dist/*.snupkg"
           prerelease: ${{ needs.get-version.outputs.is-prerelease }}
   publish:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: [new-version-only]
     steps:
       - name: Download artifact
