@@ -19,7 +19,7 @@
     <RepositoryUrl>https://github.com/kzrnm/Base32768</RepositoryUrl>
     <PackageReleaseNotes>https://github.com/kzrnm/Base32768/blob/master/CHANGELOG.md</PackageReleaseNotes>
 
-    <Version>1.0.9</Version>
+    <Version>1.0.10</Version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
