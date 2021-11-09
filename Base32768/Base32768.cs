@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-/**
+/*
 Base32768 is a binary-to-text encoding optimised for UTF-16-encoded text.
 (e.g. Windows, Java, JavaScript)
 
@@ -29,10 +29,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
 */
 namespace Kzrnm.Convert.Base32768
 {
+    /// <summary>
+    /// Base32768 is a binary-to-text encoding optimised for UTF-16-encoded text.
+    /// </summary>
     public static class Base32768
     {
         internal const int BITS_PER_CHAR = 15;// Base32768 is a 15-bit encoding
