@@ -1,6 +1,6 @@
-﻿using FluentAssertions;
-using System;
+﻿using System;
 using System.Text;
+using FluentAssertions;
 using Xunit;
 
 namespace Kzrnm.Convert.Base32768
