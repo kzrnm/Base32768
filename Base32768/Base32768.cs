@@ -88,7 +88,7 @@ namespace Kzrnm.Convert.Base32768
         public static string Encode(byte[] bytes)
         {
             var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             EncodeCore(bytes, sb);
 #else
             EncodeCore(new MemoryStream(bytes), sb);
@@ -174,7 +174,7 @@ namespace Kzrnm.Convert.Base32768
             }
         }
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
         /// <summary>
         /// Encode a binary data to Base32768.
         /// </summary>
@@ -262,7 +262,7 @@ namespace Kzrnm.Convert.Base32768
         /// <param name="str">Base32768 encoded data</param>
         /// <returns>original binary data</returns>
         public static byte[] Decode(string str)
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER
             => Decode(str.AsSpan());
         /// <summary>
         /// Decodes a Base32768.
