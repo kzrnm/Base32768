@@ -1,47 +1,50 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>netstandard1.0;netstandard2.0;netstandard2.1</TargetFrameworks>
-    <LangVersion>8</LangVersion>
-    <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+	<PropertyGroup>
+		<TargetFrameworks>netstandard1.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+		<LangVersion>8</LangVersion>
+		<GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
 
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)..\bin\Packages\$(Configuration)\</PackageOutputPath>
-    <RootNamespace>Kzrnm.Convert.Base32768</RootNamespace>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
+		<PackageOutputPath>$(MSBuildThisFileDirectory)..\bin\Packages\$(Configuration)\</PackageOutputPath>
+		<RootNamespace>Kzrnm.Convert.Base32768</RootNamespace>
 
-    <PackageId>Base32768</PackageId>
-    <Description>Base32768 is a binary encoding optimised for UTF-16-encoded text.</Description>
-    <Authors>naminodarie</Authors>
-    <PackageTags>Base32768;binary encoding</PackageTags>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/kzrnm/Base32768</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/kzrnm/Base32768</RepositoryUrl>
-    <PackageReleaseNotes>https://github.com/kzrnm/Base32768/blob/master/CHANGELOG.md</PackageReleaseNotes>
+		<AllowUnsafeBlocks Condition="'$(TargetFramework)' == 'netstandard1.0'">true</AllowUnsafeBlocks>
+		<AllowUnsafeBlocks Condition="'$(TargetFramework)' == 'netstandard2.0'">true</AllowUnsafeBlocks>
 
-    <Version>1.0.10</Version>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
+		<PackageId>Base32768</PackageId>
+		<Description>Base32768 is a binary encoding optimised for UTF-16-encoded text.</Description>
+		<Authors>naminodarie</Authors>
+		<PackageTags>Base32768;binary encoding</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl>https://github.com/kzrnm/Base32768</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/kzrnm/Base32768</RepositoryUrl>
+		<PackageReleaseNotes>https://github.com/kzrnm/Base32768/blob/master/CHANGELOG.md</PackageReleaseNotes>
 
-  <ItemGroup>
-    <None Include="../LICENSE" Pack="true" PackagePath="" Visible="false" />
+		<Version>1.0.10</Version>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+	</PropertyGroup>
 
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="../LICENSE" Pack="true" PackagePath="" Visible="false" />
 
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Base32768.Test, PublicKey=00240000048000009400000006020000002400005253413100040000010001006dbc290b4b57d661d222964b61c801e8363a0096788ce15e03988aa0a6e7455b61c8eccd0870dbbc53e446d84e41ec52ed5ed5f18f1d910dfb66f89b5eff8fd50d610309e237bde39b8bc562cf8fdb48ec9d5dda870616918fa861c3f96f8cf0a82b14fe63439c969f3a7929f814209f473d006cb81fb21d54e21a14376e9ddd</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>Base32768.Test, PublicKey=00240000048000009400000006020000002400005253413100040000010001006dbc290b4b57d661d222964b61c801e8363a0096788ce15e03988aa0a6e7455b61c8eccd0870dbbc53e446d84e41ec52ed5ed5f18f1d910dfb66f89b5eff8fd50d610309e237bde39b8bc562cf8fdb48ec9d5dda870616918fa861c3f96f8cf0a82b14fe63439c969f3a7929f814209f473d006cb81fb21d54e21a14376e9ddd</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
 
 </Project>
