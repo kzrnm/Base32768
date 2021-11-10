@@ -68,3 +68,7 @@ dotnet_style_qualification_for_field = false:none
 dotnet_style_qualification_for_method = false:none
 #prefer properties not to be prefaced with this. or Me. in Visual Basic
 dotnet_style_qualification_for_property = false:none
+
+# .NET Standard 2.0 or older
+csharp_style_prefer_index_operator = false:none
+csharp_style_prefer_range_operator = false:none
