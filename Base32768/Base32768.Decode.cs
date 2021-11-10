@@ -65,16 +65,25 @@ namespace Kzrnm.Convert.Base32768
             var res = new byte[CalculateByteLength(str.Length, str[str.Length - 1])];
 
 #if NETSTANDARD2_1_OR_GREATER
-            DecodeCore(str, res);
+            DecodeCore(str, res, 0, res.Length);
 #else
-            DecodeCore(str, 0, str.Length, res);
+            DecodeCore(str, 0, str.Length, res, 0, res.Length);
 #endif
             return res;
         }
 
-        internal static int CalculateByteLength(int length, char lastChar)
+        /// <summary>
+        /// Calculate byte array length from char length. This overload does not consider the last character.
+        /// </summary>
+        internal static int CalculateByteLength(int charLength)
+            => charLength * BITS_PER_CHAR / BITS_PER_BYTE;
+
+        /// <summary>
+        /// Calculate byte array length from char length.
+        /// </summary>
+        internal static int CalculateByteLength(int charLength, char lastChar)
         {
-            var byteLength = length * BITS_PER_CHAR / BITS_PER_BYTE;
+            var byteLength = CalculateByteLength(charLength);
             if (lastChar < ZBits15Start)
                 --byteLength;
             return byteLength;
@@ -92,16 +101,16 @@ namespace Kzrnm.Convert.Base32768
             return z;
         }
 
-        private static unsafe void DecodeCore(char* str, int offset, int count, byte[] result)
+        private static unsafe void DecodeCore(char* str, int count, byte[] result, int resultOffset, int resultCount)
         {
-            int endOfStr = offset + count;
-            var numUint8s = 0;
+            Debug.Assert(resultOffset + resultCount <= result.Length);
+            var numUint8s = resultOffset;
             var numUint8Remaining = 8;
             int i;
 
             unchecked
             {
-                for (i = 0; i + 9 < endOfStr;)
+                for (i = 0; i + 9 < count;)
                 {
                     {
                         var chr = str[i++];
@@ -159,7 +168,7 @@ namespace Kzrnm.Convert.Base32768
                     }
                 }
 
-                for (; i < endOfStr; i++)
+                for (; i < count; i++)
                 {
                     var chr = str[i];
 
@@ -168,7 +177,7 @@ namespace Kzrnm.Convert.Base32768
                     {
                         if (chr < ZBits15Start)
                         {
-                            if (i + 1 != endOfStr)
+                            if (i + 1 != count)
                             {
                                 ThrowFormatException(chr);
                                 return;
@@ -198,38 +207,39 @@ namespace Kzrnm.Convert.Base32768
                             result[numUint8s++] |= (byte)(zz >> numZBits);
                             numUint8Remaining = 8;
                         }
-                    } while (numZBits > 0 && numUint8s < result.Length);
+                    } while (numZBits > 0 && numUint8s < resultCount);
                 }
             }
         }
 
 #if NETSTANDARD2_1_OR_GREATER
-        internal static unsafe void DecodeCore(ReadOnlySpan<char> str, byte[] result)
+        internal static unsafe void DecodeCore(ReadOnlySpan<char> str, byte[] result, int resultOffset, int resultCount)
         {
             fixed (char* p = str)
             {
-                DecodeCore(p, 0, str.Length, result);
+                DecodeCore(p, str.Length, result, resultOffset, resultCount);
+            }
+        }
+#else
+        internal static unsafe void DecodeCore(string str, int offset, int count, byte[] result, int resultOffset, int resultCount)
+        {
+            if (offset + count > str.Length)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            fixed (char* p = str)
+            {
+                DecodeCore(p + offset, count, result, resultOffset, resultCount);
             }
         }
 #endif
-        internal static unsafe void DecodeCore(string str, int offset, int count, byte[] result)
+        internal static unsafe void DecodeCore(char[] str, int offset, int count, byte[] result, int resultOffset, int resultCount)
         {
             if (offset + count > str.Length)
                 throw new ArgumentOutOfRangeException(nameof(count));
 
             fixed (char* p = str)
             {
-                DecodeCore(p, offset, count, result);
-            }
-        }
-        internal static unsafe void DecodeCore(char[] str, int offset, int count, byte[] result)
-        {
-            if (offset + count > str.Length)
-                throw new ArgumentOutOfRangeException(nameof(count));
-
-            fixed (char* p = str)
-            {
-                DecodeCore(p, offset, count, result);
+                DecodeCore(p + offset, count, result, resultOffset, resultCount);
             }
         }
         #endregion Decode
