@@ -1,4 +1,9 @@
-﻿using System;
+﻿#if NETSTANDARD2_1_OR_GREATER
+global using StringOrReadOnlySpanChar = System.ReadOnlySpan<char>;
+#else
+global using StringOrReadOnlySpanChar = System.String;
+#endif
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -255,7 +260,6 @@ namespace Kzrnm.Convert.Base32768
         #endregion Encode
 
         #region Decode
-
         /// <summary>
         /// Decodes a Base32768.
         /// </summary>
@@ -272,18 +276,46 @@ namespace Kzrnm.Convert.Base32768
         public static byte[] Decode(ReadOnlySpan<char> str)
 #endif
         {
-            var length = str.Length * BITS_PER_CHAR / BITS_PER_BYTE;
-            if (length == 0)
+            if (str.Length == 0)
                 return
 #if NETSTANDARD1_0
                     new byte[0];
 #else
                     Array.Empty<byte>();
 #endif
+            var res = new byte[CalculateByteLength(str)];
+            DecodeCore(str, res);
+            return res;
+        }
 
+        internal static int CalculateByteLength(StringOrReadOnlySpanChar str)
+        {
+            var length = str.Length * BITS_PER_CHAR / BITS_PER_BYTE;
             if (str[str.Length - 1] < ZBits15Start)
                 --length;
-            var res = new byte[length];
+            return length;
+        }
+
+        internal static void DecodeCore(
+#if NETSTANDARD2_1_OR_GREATER
+            StringOrReadOnlySpanChar str, ReadOnlySpan<byte> result
+#else
+            StringOrReadOnlySpanChar str, byte[] result
+#endif
+            )
+        {
+            static void ThrowFormatException(char c)
+               => throw new FormatException($"Unrecognised Base32768 character: {c}");
+            static ushort ValidateCharAndLookupD(char c)
+            {
+                if (c < ZBits15Start || lookupD[c] is not ushort z)
+                {
+                    ThrowFormatException(c);
+                    return default;
+                }
+                return z;
+            }
+
             var numUint8s = 0;
             var numUint8Remaining = 8;
             int i;
@@ -294,65 +326,57 @@ namespace Kzrnm.Convert.Base32768
                 {
                     {
                         var chr = str[i++];
-                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
-                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
-                        res[numUint8s++] |= (byte)(z >> 7);
-                        res[numUint8s] = (byte)(z << 1);
+                        var z = ValidateCharAndLookupD(chr);
+                        result[numUint8s++] |= (byte)(z >> 7);
+                        result[numUint8s] = (byte)(z << 1);
                     }
                     {
                         var chr = str[i++];
-                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
-                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
-                        res[numUint8s++] |= (byte)(z >> 14);
-                        res[numUint8s++] = (byte)(z >> 6);
-                        res[numUint8s] = (byte)(z << 2);
+                        var z = ValidateCharAndLookupD(chr);
+                        result[numUint8s++] |= (byte)(z >> 14);
+                        result[numUint8s++] = (byte)(z >> 6);
+                        result[numUint8s] = (byte)(z << 2);
                     }
                     {
                         var chr = str[i++];
-                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
-                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
-                        res[numUint8s++] |= (byte)(z >> 13);
-                        res[numUint8s++] = (byte)(z >> 5);
-                        res[numUint8s] = (byte)(z << 3);
+                        var z = ValidateCharAndLookupD(chr);
+                        result[numUint8s++] |= (byte)(z >> 13);
+                        result[numUint8s++] = (byte)(z >> 5);
+                        result[numUint8s] = (byte)(z << 3);
                     }
                     {
                         var chr = str[i++];
-                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
-                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
-                        res[numUint8s++] |= (byte)(z >> 12);
-                        res[numUint8s++] = (byte)(z >> 4);
-                        res[numUint8s] = (byte)(z << 4);
+                        var z = ValidateCharAndLookupD(chr);
+                        result[numUint8s++] |= (byte)(z >> 12);
+                        result[numUint8s++] = (byte)(z >> 4);
+                        result[numUint8s] = (byte)(z << 4);
                     }
                     {
                         var chr = str[i++];
-                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
-                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
-                        res[numUint8s++] |= (byte)(z >> 11);
-                        res[numUint8s++] = (byte)(z >> 3);
-                        res[numUint8s] = (byte)(z << 5);
+                        var z = ValidateCharAndLookupD(chr);
+                        result[numUint8s++] |= (byte)(z >> 11);
+                        result[numUint8s++] = (byte)(z >> 3);
+                        result[numUint8s] = (byte)(z << 5);
                     }
                     {
                         var chr = str[i++];
-                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
-                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
-                        res[numUint8s++] |= (byte)(z >> 10);
-                        res[numUint8s++] = (byte)(z >> 2);
-                        res[numUint8s] = (byte)(z << 6);
+                        var z = ValidateCharAndLookupD(chr);
+                        result[numUint8s++] |= (byte)(z >> 10);
+                        result[numUint8s++] = (byte)(z >> 2);
+                        result[numUint8s] = (byte)(z << 6);
                     }
                     {
                         var chr = str[i++];
-                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
-                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
-                        res[numUint8s++] |= (byte)(z >> 9);
-                        res[numUint8s++] = (byte)(z >> 1);
-                        res[numUint8s] = (byte)(z << 7);
+                        var z = ValidateCharAndLookupD(chr);
+                        result[numUint8s++] |= (byte)(z >> 9);
+                        result[numUint8s++] = (byte)(z >> 1);
+                        result[numUint8s] = (byte)(z << 7);
                     }
                     {
                         var chr = str[i++];
-                        if (chr < ZBits15Start || !(lookupD[chr] is ushort z))
-                            throw new FormatException($"Unrecognised Base32768 character: {chr}");
-                        res[numUint8s++] |= (byte)(z >> 8);
-                        res[numUint8s++] = (byte)z;
+                        var z = ValidateCharAndLookupD(chr);
+                        result[numUint8s++] |= (byte)(z >> 8);
+                        result[numUint8s++] = (byte)z;
                     }
                 }
 
@@ -366,12 +390,18 @@ namespace Kzrnm.Convert.Base32768
                         if (chr < ZBits15Start)
                         {
                             if (i + 1 != str.Length)
-                                throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                            {
+                                ThrowFormatException(chr);
+                                return;
+                            }
                             numZBits = 7;
                         }
                     }
                     else
-                        throw new FormatException($"Unrecognised Base32768 character: {chr}");
+                    {
+                        ThrowFormatException(chr);
+                        return;
+                    }
 
                     do
                     {
@@ -380,21 +410,19 @@ namespace Kzrnm.Convert.Base32768
                         if (numZBits < numUint8Remaining)
                         {
                             numUint8Remaining -= numZBits;
-                            res[numUint8s] |= (byte)(zz << numUint8Remaining);
+                            result[numUint8s] |= (byte)(zz << numUint8Remaining);
                             numZBits = 0;
                         }
                         else
                         {
                             numZBits -= numUint8Remaining;
-                            res[numUint8s++] |= (byte)(zz >> numZBits);
+                            result[numUint8s++] |= (byte)(zz >> numZBits);
                             numUint8Remaining = 8;
                         }
-                    } while (numZBits > 0 && numUint8s < res.Length);
+                    } while (numZBits > 0 && numUint8s < result.Length);
                 }
             }
-
-            return res;
         }
-        #endregion Decode
+#endregion Decode
     }
 }
