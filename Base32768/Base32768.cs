@@ -76,7 +76,7 @@ namespace Kzrnm.Convert.Base32768
                     encodeRepertoire[ix++] = i;
                 }
             }
-            System.Diagnostics.Debug.Assert(size == ix);
+            Debug.Assert(size == ix);
             return encodeRepertoire;
         }
 

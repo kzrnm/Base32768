@@ -7,68 +7,65 @@ namespace Kzrnm.Convert.Base32768
     public class Base32768Test : Base32768TestBase
     {
         [Theory]
-        [MemberData(nameof(Simple_Data))]
-        public void Simple(string str, byte[] bytes)
+        [MemberData(nameof(AllPairData))]
+        public void Encode(string name, string str, byte[] bytes)
         {
+            name.Should().NotBeNull();
             Base32768.Encode(bytes).Should().Be(str);
+        }
+        [Theory]
+        [MemberData(nameof(AllPairData))]
+        public void Decode(string name, string str, byte[] bytes)
+        {
+            name.Should().NotBeNull();
             Base32768.Decode(str).Should().Equal(bytes);
         }
-
         [Theory]
-        [MemberData(nameof(Simple_Data))]
-        public void SimpleStream(string str, byte[] bytes)
+        [MemberData(nameof(AllPairData))]
+        public void Stream(string name, string str, byte[] bytes)
         {
+            name.Should().NotBeNull();
             Base32768.Encode(bytes.ToStream()).Should().Be(str);
         }
 
-#if NETCOREAPP3_1_OR_GREATER
-        [Theory]
-        [MemberData(nameof(Simple_Data))]
-        public void SimpleSpan(string str, byte[] bytes)
-        {
-            Base32768.Encode(bytes.AsSpan()).Should().Be(str);
-            Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
-        }
-#endif
-
-#if !DEBUG
         [Theory]
         [MemberData(nameof(EnumerateRandomBytes))]
-        public void RandomBytes(byte[] bytes)
+        public void RandomBytes(string name, string str, byte[] bytes)
         {
-            var str = Base32768.Encode(bytes);
+            name.Should().NotBeNull();
+            bytes.Should().NotBeNull();
             str.IsNormalized().Should().BeTrue();
-
-            Base32768.Encode(bytes.ToStream()).Should().Be(str);
-            Base32768.Decode(str).Should().Equal(bytes);
-#if NETCOREAPP3_1_OR_GREATER
-            Base32768.Encode(bytes.AsSpan()).Should().Be(str);
-            Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
-#endif
         }
-
-        [Theory]
-        [MemberData(nameof(EnumeratePairTestData))]
-        public void PairTestData(string str, byte[] bytes)
-        {
-            Base32768.Encode(bytes).Should().Be(str);
-            Base32768.Decode(str).Should().Equal(bytes);
-#if NETCOREAPP3_1_OR_GREATER
-            Base32768.Encode(bytes.ToStream()).Should().Be(str);
-            Base32768.Encode(bytes.AsSpan()).Should().Be(str);
-            Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
-#endif
-        }
-#endif
 
         [Theory]
         [MemberData(nameof(EnumerateTestDataBad))]
-        public void Bad(string str)
+        public void BadDecode(string str)
         {
             str.Invoking(str => Base32768.Decode(str)).Should().Throw<FormatException>();
-#if NETCOREAPP3_1_OR_GREATER
-            str.Invoking(str => Base32768.Decode(str.AsSpan())).Should().Throw<FormatException>();
-#endif
         }
+
+#if NETCOREAPP3_1_OR_GREATER
+        [Theory]
+        [MemberData(nameof(AllPairData))]
+        public void EncodeSpan(string name, string str, byte[] bytes)
+        {
+            name.Should().NotBeNull();
+            Base32768.Encode(bytes.AsSpan()).Should().Be(str);
+        }
+        [Theory]
+        [MemberData(nameof(AllPairData))]
+        public void DecodeSpan(string name, string str, byte[] bytes)
+        {
+            name.Should().NotBeNull();
+            Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
+        }
+
+        [Theory]
+        [MemberData(nameof(EnumerateTestDataBad))]
+        public void BadDecodeSpan(string str)
+        {
+            str.Invoking(str => Base32768.Decode(str.AsSpan())).Should().Throw<FormatException>();
+        }
+#endif
     }
 }

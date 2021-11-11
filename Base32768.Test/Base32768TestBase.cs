@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Text;
+using System.Linq;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Kzrnm.Convert.Base32768
 {
     public class Base32768TestBase
     {
-        public static TheoryData Simple_Data = new TheoryData<string, byte[]>
+        public static TheoryData<string, string, byte[]> SimpleData { get; } = new TheoryData<string, string, byte[]>
         {
             {
+                "ꡟ",
                 "ꡟ",
                 new byte[]{255}
             },
             {
+                "ꡟꡟꡟꡟꡟꡟꡟꡟꡟ",
                 "ꡟꡟꡟꡟꡟꡟꡟꡟꡟ",
                 new byte[]{
                     255, 255, 255, 255,
@@ -23,6 +27,7 @@ namespace Kzrnm.Convert.Base32768
             },
             {
                 "ݠ暠䙠㙐▨ᖄቢႡဟ",
+                "ݠ暠䙠㙐▨ᖄቢႡဟ",
                 new byte[]{
                     1, 1, 1, 1,
                     1, 1, 1, 1,
@@ -31,6 +36,7 @@ namespace Kzrnm.Convert.Base32768
                 }
             },
             {
+                "ݠ暠䙠㙐▨ᖄቢႡݠʟ",
                 "ݠ暠䙠㙐▨ᖄቢႡݠʟ",
                 new byte[]{
                     1, 1, 1, 1,
@@ -41,6 +47,7 @@ namespace Kzrnm.Convert.Base32768
             },
             {
                 "ݠ暠䙠㙐▨ᖄቢႡݠ曟",
+                "ݠ暠䙠㙐▨ᖄቢႡݠ曟",
                 new byte[]{
                     1, 1, 1, 1,
                     1, 1, 1, 1,
@@ -49,48 +56,29 @@ namespace Kzrnm.Convert.Base32768
                 }
             }
         };
-        public static TheoryData EnumerateRandomBytes()
-        {
-            var rnd = new Random();
-            var theoryData = new TheoryData<byte[]>();
-            for (int i = 0; i < 100; i++)
+
+        public static TheoryData<string, string, byte[]> EnumerateRandomBytes { get; } = Enumerable.Repeat(new Random(227), 100)
+            .Select((rnd, i) =>
             {
                 var bytes = new byte[rnd.Next(1, 1000)];
                 rnd.NextBytes(bytes);
-                theoryData.Add(bytes);
-            }
-            return theoryData;
-        }
+                return ($"Random:{i}", Base32768.Encode(bytes), bytes);
+            })
+            .ToTheoryData();
 
-        public static TheoryData EnumeratePairTestData()
-        {
-            var testData = TestUtil.TestData;
-            var theoryData = new TheoryData<string, byte[]>();
-            foreach (var (name, val) in testData)
-            {
-                if (!name.StartsWith("test-data/pairs"))
-                    continue;
-                if (!name.EndsWith(".txt"))
-                    continue;
-                var binName = System.IO.Path.ChangeExtension(name, "bin");
-                theoryData.Add(Encoding.UTF8.GetString(val), testData[binName]);
-            }
-            return theoryData;
-        }
+        public static TheoryData<string, string, byte[]> EnumeratePairTestData { get; } = TestUtil.TestData
+            .Where(p => p.Key.StartsWith("test-data/pairs") && p.Key.EndsWith(".txt"))
+            .Select(p => (p.Key, Encoding.UTF8.GetString(p.Value), TestUtil.TestData[System.IO.Path.ChangeExtension(p.Key, "bin")]))
+            .ToTheoryData();
+        public static IEnumerable<object[]> AllPairData { get; }
+            = SimpleData
+            .Concat(EnumerateRandomBytes)
+            .Concat(EnumeratePairTestData)
+            .ToArray();
 
-        public static TheoryData EnumerateTestDataBad()
-        {
-            var testData = TestUtil.TestData;
-            var theoryData = new TheoryData<string>();
-            foreach (var (name, val) in testData)
-            {
-                if (!name.StartsWith("test-data/bad"))
-                    continue;
-                if (!name.EndsWith(".txt"))
-                    continue;
-                theoryData.Add(Encoding.UTF8.GetString(val));
-            }
-            return theoryData;
-        }
+        public static TheoryData<string> EnumerateTestDataBad { get; } = TestUtil.TestData
+            .Where(p => p.Key.StartsWith("test-data/bad") && p.Key.EndsWith(".txt"))
+            .Select(p => Encoding.UTF8.GetString(p.Value))
+            .ToTheoryData();
     }
 }

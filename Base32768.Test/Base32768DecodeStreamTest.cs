@@ -9,13 +9,10 @@ namespace Kzrnm.Convert.Base32768
     public class Base32768DecodeStreamTest : Base32768TestBase
     {
         [Theory]
-        [MemberData(nameof(Simple_Data))]
-#if !DEBUG
-        [MemberData(nameof(EnumerateRandomBytes))]
-        [MemberData(nameof(EnumeratePairTestData))]
-#endif
-        public void DecodeStream(string str, byte[] bytes)
+        [MemberData(nameof(AllPairData))]
+        public void DecodeStream(string name, string str, byte[] bytes)
         {
+            name.Should().NotBeNull();
             using var decodedMemoryStream = new MemoryStream();
             using (var textReader = new StringReader(str))
             using (var decoder = new Base32768Stream(textReader))
