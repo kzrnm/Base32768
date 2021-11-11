@@ -1,41 +1,97 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Text;
 using FluentAssertions;
 using Xunit;
 
 namespace Kzrnm.Convert.Base32768
 {
-    public class Base32768Test : Base32768TestBase
+    public class Base32768Test
     {
-        [Theory]
-        [MemberData(nameof(AllPairData))]
-        public void Encode(string name, string str, byte[] bytes)
+        public static TheoryData<PairTestData> SimpleData { get; } = new TheoryData<PairTestData>
         {
-            name.Should().NotBeNull();
-            Base32768.Encode(bytes).Should().Be(str);
-        }
-        [Theory]
-        [MemberData(nameof(AllPairData))]
-        public void Decode(string name, string str, byte[] bytes)
-        {
-            name.Should().NotBeNull();
-            Base32768.Decode(str).Should().Equal(bytes);
-        }
-        [Theory]
-        [MemberData(nameof(AllPairData))]
-        public void Stream(string name, string str, byte[] bytes)
-        {
-            name.Should().NotBeNull();
-            Base32768.Encode(bytes.ToStream()).Should().Be(str);
-        }
+            new(
+                "ꡟ",
+                "ꡟ",
+                new byte[]{255}
+            ),
+            new(
+                "ꡟꡟꡟꡟꡟꡟꡟꡟꡟ",
+                "ꡟꡟꡟꡟꡟꡟꡟꡟꡟ",
+                new byte[]{
+                    255, 255, 255, 255,
+                    255, 255, 255, 255,
+                    255, 255, 255, 255,
+                    255, 255, 255, 255
+                }
+            ),
+            new(
+                "ݠ暠䙠㙐▨ᖄቢႡဟ",
+                "ݠ暠䙠㙐▨ᖄቢႡဟ",
+                new byte[]{
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1
+                }
+            ),
+            new(
+                "ݠ暠䙠㙐▨ᖄቢႡݠʟ",
+                "ݠ暠䙠㙐▨ᖄቢႡݠʟ",
+                new byte[]{
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1, 1
+                }
+            ),
+            new(
+                "ݠ暠䙠㙐▨ᖄቢႡݠ曟",
+                "ݠ暠䙠㙐▨ᖄቢႡݠ曟",
+                new byte[]{
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1,
+                    1, 1, 1, 1, 1, 1
+                }
+            )
+        };
+
+        public static TheoryData<PairTestData> NormalPairTestData { get; } = TestUtil.TestData
+            .Select(p => p.Key)
+            .Where(s => s.StartsWith("pairs.") && !s.StartsWith("pairs.single_bytes.") && s.EndsWith(".txt"))
+            .Select(PairTestData.FromStringFileName)
+            .ToTheoryData();
+
+
+        public static TheoryData<string> EnumerateTestDataBad { get; } = TestUtil.TestData
+            .Where(p => p.Key.StartsWith("bad.") && p.Key.EndsWith(".txt"))
+            .Select(p => Encoding.UTF8.GetString(p.Value))
+            .ToTheoryData();
 
         [Theory]
-        [MemberData(nameof(EnumerateRandomBytes))]
-        public void RandomBytes(string name, string str, byte[] bytes)
+        [MemberData(nameof(SimpleData))]
+        [MemberData(nameof(NormalPairTestData))]
+        public void Encode(PairTestData data)
         {
-            name.Should().NotBeNull();
-            bytes.Should().NotBeNull();
-            str.IsNormalized().Should().BeTrue();
+            Base32768.Encode(data.Bytes).Should().Be(data.String);
         }
+        [Theory]
+        [MemberData(nameof(SimpleData))]
+        [MemberData(nameof(NormalPairTestData))]
+        public void Decode(PairTestData data)
+        {
+            Base32768.Decode(data.String).Should().Equal(data.Bytes);
+        }
+        [Theory]
+        [MemberData(nameof(SimpleData))]
+        [MemberData(nameof(NormalPairTestData))]
+        public void EncodeStream(PairTestData data)
+        {
+            Base32768.Encode(data.Bytes.ToStream()).Should().Be(data.String);
+        }
+
 
         [Theory]
         [MemberData(nameof(EnumerateTestDataBad))]
@@ -44,20 +100,48 @@ namespace Kzrnm.Convert.Base32768
             str.Invoking(str => Base32768.Decode(str)).Should().Throw<FormatException>();
         }
 
+        [Theory]
+        [MemberData(nameof(SimpleData))]
+        [MemberData(nameof(NormalPairTestData))]
+        public void Base32768StreamDecode(PairTestData data)
+        {
+            using var decodedMemoryStream = new MemoryStream();
+            using (var textReader = new StringReader(data.String))
+            using (var decoder = new Base32768Stream(textReader))
+            {
+                decoder.CopyTo(decodedMemoryStream);
+            }
+            var gotBytes = decodedMemoryStream.ToArray();
+            gotBytes.Should().Equal(data.Bytes);
+        }
+        [Fact]
+        public void Large()
+        {
+            var str = Encoding.UTF8.GetString(TestUtil.TestData["pairs.every-pair-of-bytes.txt"]);
+            var bytes = TestUtil.TestData["pairs.every-pair-of-bytes.bin"];
+            using var decodedMemoryStream = new MemoryStream();
+            using (var textReader = new StringReader(str))
+            using (var decoder = new Base32768Stream(textReader))
+            {
+                decoder.CopyTo(decodedMemoryStream);
+            }
+            var gotBytes = decodedMemoryStream.ToArray();
+            gotBytes.Should().Equal(bytes);
+        }
 #if NETCOREAPP3_1_OR_GREATER
         [Theory]
-        [MemberData(nameof(AllPairData))]
-        public void EncodeSpan(string name, string str, byte[] bytes)
+        [MemberData(nameof(SimpleData))]
+        [MemberData(nameof(NormalPairTestData))]
+        public void EncodeSpan(PairTestData data)
         {
-            name.Should().NotBeNull();
-            Base32768.Encode(bytes.AsSpan()).Should().Be(str);
+            Base32768.Encode(data.Bytes.AsSpan()).Should().Be(data.String);
         }
         [Theory]
-        [MemberData(nameof(AllPairData))]
-        public void DecodeSpan(string name, string str, byte[] bytes)
+        [MemberData(nameof(SimpleData))]
+        [MemberData(nameof(NormalPairTestData))]
+        public void DecodeSpan(PairTestData data)
         {
-            name.Should().NotBeNull();
-            Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
+            Base32768.Decode(data.String.AsSpan()).Should().Equal(data.Bytes);
         }
 
         [Theory]

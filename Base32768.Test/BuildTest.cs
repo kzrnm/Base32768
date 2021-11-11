@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Kzrnm.Convert.Base32768
 {
-    public class Base32768BuildTest
+    public class BuildTest
     {
         [Fact]
         public void ValidLookupD()
