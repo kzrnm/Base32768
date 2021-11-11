@@ -103,9 +103,9 @@ namespace Kzrnm.Convert.Base32768
 
         private static unsafe void DecodeCore(char* str, int count, byte[] result, int resultOffset, int resultCount)
         {
-            Debug.Assert(resultOffset + resultCount <= result.Length);
+            int resultEnd = resultOffset + resultCount;
+            Debug.Assert(resultEnd <= result.Length);
             var numUint8s = resultOffset;
-            var numUint8Remaining = 8;
             int i;
 
             unchecked
@@ -168,6 +168,7 @@ namespace Kzrnm.Convert.Base32768
                     }
                 }
 
+                var numUint8Remaining = 8;
                 for (; i < count; i++)
                 {
                     var chr = str[i];
@@ -207,7 +208,7 @@ namespace Kzrnm.Convert.Base32768
                             result[numUint8s++] |= (byte)(zz >> numZBits);
                             numUint8Remaining = 8;
                         }
-                    } while (numZBits > 0 && numUint8s < resultCount);
+                    } while (numZBits > 0 && numUint8s < resultEnd);
                 }
             }
         }

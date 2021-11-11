@@ -77,16 +77,21 @@ namespace Kzrnm.Convert.Base32768
             if ((uint)count > buffer.Length - offset)
                 throw new ArgumentOutOfRangeException(nameof(count));
 
-            int result = 0;
+            int readCacheSize = ReadCache(buffer, offset, count);
+            offset += readCacheSize;
+            count -= readCacheSize;
 
+            return ReadCore(buffer, offset, count) + readCacheSize;
+        }
+        private int ReadCache(byte[] buffer, int offset, int count)
+        {
+            int result = 0;
             if (previousBytesCacheCount > 0)
             {
-                if (previousBytesCacheCount <= count)
+                if (previousBytesCacheCount < count)
                 {
                     Array.Copy(previousBytesCache, previousBytesCacheOffset, buffer, offset, previousBytesCacheCount);
                     result = previousBytesCacheCount;
-                    offset += previousBytesCacheCount;
-                    count -= previousBytesCacheCount;
                     previousBytesCacheOffset = 0;
                     previousBytesCacheCount = 0;
                 }
@@ -95,15 +100,24 @@ namespace Kzrnm.Convert.Base32768
                     Array.Copy(previousBytesCache, previousBytesCacheOffset, buffer, offset, count);
                     previousBytesCacheOffset += count;
                     previousBytesCacheCount -= count;
-                    return count;
+                    result = count;
                 }
             }
-
-
-            Debug.Assert(previousBytesCacheOffset == 0);
+            return result;
+        }
+        private int ReadCore(byte[] buffer, int offset, int count)
+        {
+            Debug.Assert(buffer is not null);
+            Debug.Assert(offset >= 0);
+            Debug.Assert((uint)count <= buffer.Length - offset);
             Debug.Assert(previousBytesCacheCount == 0);
 
-            int nextCharSize = (count + BITS_PER_CHAR - 1) / BITS_PER_CHAR * BITS_PER_BYTE;
+            if (count == 0)
+                return 0;
+
+            int nextByteSize = MathUtil.CeilingNth(count, BITS_PER_CHAR);
+            int nextCharSize = nextByteSize * BITS_PER_BYTE / BITS_PER_CHAR;
+            Debug.Assert(nextByteSize % BITS_PER_CHAR == 0);
 
             var charBuffer
 #if NETSTANDARD2_1_OR_GREATER
@@ -111,56 +125,40 @@ namespace Kzrnm.Convert.Base32768
 #else
                 = new char[nextCharSize];
 #endif
-
             try
             {
                 int readingCharSize = reader.ReadBlock(charBuffer, 0, nextCharSize);
                 if (readingCharSize == 0)
                 {
-                    return result;
+                    return 0;
                 }
-                int readingBytesSize = CalculateByteLength(readingCharSize, charBuffer[readingCharSize - 1]);
 
+                int readingBytesSize = CalculateByteLength(readingCharSize, charBuffer[readingCharSize - 1]);
                 if (readingBytesSize <= count)
                 {
                     ClearBufferAndDecodeCore(charBuffer, 0, readingCharSize, buffer, offset, readingBytesSize);
-                    return result + readingBytesSize;
+                    return readingBytesSize;
                 }
+                int result = count;
+                int bufferedBytesSize = MathUtil.FloorNth(readingBytesSize - 1, BITS_PER_CHAR);
+                int bufferedCharSize = bufferedBytesSize / BITS_PER_CHAR * BITS_PER_BYTE;
+                Debug.Assert(bufferedBytesSize % BITS_PER_CHAR == 0);
+                Debug.Assert(bufferedBytesSize <= count);
 
-                int buffferdCharSize = readingCharSize & ~0b111;
-                int bufferedSize = CalculateByteLength(buffferdCharSize);
-                Debug.Assert(bufferedSize <= count);
-                ClearBufferAndDecodeCore(charBuffer, 0, buffferdCharSize, buffer, offset, bufferedSize);
-                count -= bufferedSize;
-                offset += bufferedSize;
-                result += bufferedSize;
+                ClearBufferAndDecodeCore(charBuffer, 0, bufferedCharSize, buffer, offset, bufferedBytesSize);
+                count -= bufferedBytesSize;
+                offset += bufferedBytesSize;
+                int remainingCharCount = readingCharSize - bufferedCharSize;
 
-                int remainingCharSize = readingCharSize - buffferdCharSize;
-                if (remainingCharSize <= 0)
-                    return result;
+                Debug.Assert(remainingCharCount > 0);
+                Debug.Assert(count <= BITS_PER_CHAR);
+                Debug.Assert(remainingCharCount <= BITS_PER_BYTE);
 
-                Debug.Assert(remainingCharSize > 0);
-                Debug.Assert(remainingCharSize <= BITS_PER_BYTE);
-
-                previousBytesCacheCount = CalculateByteLength(remainingCharSize, charBuffer[readingCharSize - 1]);
-                ClearBufferAndDecodeCore(charBuffer, buffferdCharSize, remainingCharSize, previousBytesCache, 0, previousBytesCacheCount);
-
-                if (previousBytesCacheCount <= count)
-                {
-                    Array.Copy(previousBytesCache, previousBytesCacheOffset, buffer, offset, previousBytesCacheCount);
-                    result += previousBytesCacheCount;
-                    previousBytesCacheOffset = 0;
-                    previousBytesCacheCount = 0;
-                    return result;
-                }
-                else
-                {
-                    Array.Copy(previousBytesCache, previousBytesCacheOffset, buffer, offset, count);
-                    previousBytesCacheOffset += count;
-                    previousBytesCacheCount -= count;
-                    result += count;
-                    return result;
-                }
+                previousBytesCacheOffset = 0;
+                previousBytesCacheCount = CalculateByteLength(remainingCharCount, charBuffer[readingCharSize - 1]);
+                ClearBufferAndDecodeCore(charBuffer, bufferedCharSize, remainingCharCount, previousBytesCache, 0, previousBytesCacheCount);
+                ReadCache(buffer, offset, count);
+                return result;
             }
             finally
             {
