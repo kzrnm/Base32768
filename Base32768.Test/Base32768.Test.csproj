@@ -11,6 +11,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove="test-data\**" />
+		<EmbeddedResource Include="test-data\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="FluentAssertions" Version="5.10.3" />
 		<PackageReference Include="GitHubActionsTestLogger" Version="1.2.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
@@ -24,10 +29,6 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="test-data\**" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 	<ItemGroup>

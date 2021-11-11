@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
+using System.Reflection;
 using Xunit;
 
 namespace Kzrnm.Convert.Base32768
@@ -10,20 +10,20 @@ namespace Kzrnm.Convert.Base32768
         public static IReadOnlyDictionary<string, byte[]> TestData { get; } = LoadTestData();
         private static Dictionary<string, byte[]> LoadTestData()
         {
-            var root = TestProjectPath();
+            var assembly = Assembly.GetExecutingAssembly();
             var dic = new Dictionary<string, byte[]>();
-            foreach (var path in Directory.EnumerateFiles(root, "test-data/*", SearchOption.AllDirectories))
+
+            foreach (var name in assembly.GetManifestResourceNames())
             {
-                var name = path.Substring(root.Length + 1).Replace('\\', '/').TrimStart('/');
-                dic[name] = File.ReadAllBytes(path);
+                var key = name.Replace("Kzrnm.Convert.Base32768.test_data.", "");
+                using var ms = new MemoryStream();
+                using (var stream = assembly.GetManifestResourceStream(name))
+                {
+                    stream.CopyTo(ms);
+                }
+                dic[key] = ms.ToArray();
             }
             return dic;
-        }
-
-        public static string TestProjectPath()
-        {
-            return Path.GetDirectoryName(GetCallerPath());
-            static string GetCallerPath([CallerFilePath] string path = "") => path;
         }
 
         public static TheoryData<T1> ToTheoryData<T1>(this IEnumerable<T1> collection)

@@ -15,12 +15,12 @@ namespace Kzrnm.Convert.Base32768
             static Dictionary<char, ushort> GetExpectedLookupD()
             {
                 var serializer = new JsonSerializer();
-                using var ms = new MemoryStream(TestUtil.TestData["test-data/expectedLookupD.json"]);
+                using var ms = new MemoryStream(TestUtil.TestData["expectedLookupD.json"]);
                 using var sr = new StreamReader(ms);
                 using var jsonTextReader = new JsonTextReader(sr);
                 return serializer.Deserialize<Dictionary<char, ushort>>(jsonTextReader);
             }
-            var wantKeys = Encoding.UTF8.GetString(TestUtil.TestData["test-data/wantKeys.txt"]);
+            var wantKeys = Encoding.UTF8.GetString(TestUtil.TestData["wantKeys.txt"]);
             var expectedLookupD = GetExpectedLookupD();
 
             var lookupD = Base32768.lookupD;
