@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using Xunit;
 
-namespace Kzrnm.Convert.Base32768
+namespace Kzrnm.Convert.Base32768.Models
 {
     public static class TestUtil
     {

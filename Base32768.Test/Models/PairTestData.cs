@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Kzrnm.Convert.Base32768
+namespace Kzrnm.Convert.Base32768.Models
 {
     public record PairTestData(string Name, string String, byte[] Bytes)
     {

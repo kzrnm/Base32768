@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using FluentAssertions;
+using Kzrnm.Convert.Base32768.Models;
 using Xunit;
 
 namespace Kzrnm.Convert.Base32768

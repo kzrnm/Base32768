@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using FluentAssertions;
+using Kzrnm.Convert.Base32768.Models;
 using Newtonsoft.Json;
 using Xunit;
 
