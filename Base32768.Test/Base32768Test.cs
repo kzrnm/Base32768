@@ -115,20 +115,7 @@ namespace Kzrnm.Convert.Base32768
             var gotBytes = decodedMemoryStream.ToArray();
             gotBytes.Should().Equal(data.Bytes);
         }
-        [Fact]
-        public void Large()
-        {
-            var str = Encoding.UTF8.GetString(TestUtil.TestData["pairs.every-pair-of-bytes.txt"]);
-            var bytes = TestUtil.TestData["pairs.every-pair-of-bytes.bin"];
-            using var decodedMemoryStream = new MemoryStream();
-            using (var textReader = new StringReader(str))
-            using (var decoder = new Base32768Stream(textReader))
-            {
-                decoder.CopyTo(decodedMemoryStream);
-            }
-            var gotBytes = decodedMemoryStream.ToArray();
-            gotBytes.Should().Equal(bytes);
-        }
+
 #if NETCOREAPP3_1_OR_GREATER
         [Theory]
         [MemberData(nameof(SimpleData))]
