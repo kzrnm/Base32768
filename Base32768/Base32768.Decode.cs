@@ -38,7 +38,6 @@ namespace Kzrnm.Convert.Base32768
     /// </summary>
     public static partial class Base32768
     {
-        #region Decode
         /// <summary>
         /// Decodes a Base32768.
         /// </summary>
@@ -243,6 +242,5 @@ namespace Kzrnm.Convert.Base32768
                 DecodeCore(p + offset, count, result, resultOffset, resultCount);
             }
         }
-        #endregion Decode
     }
 }
