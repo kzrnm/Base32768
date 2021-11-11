@@ -9,25 +9,6 @@ namespace Kzrnm.Convert.Base32768
     /// </summary>
     public partial class Base32768Stream : Stream
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Base32768Stream"/>. the stream is for decoding and read only.
-        /// </summary>
-        /// <param name="reader">Base32768 text reader</param>
-        public Base32768Stream(TextReader reader)
-        {
-            this.reader = reader;
-        }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Base32768Stream"/>. the stream is for encoding and write only.
-        /// </summary>
-        /// <param name="writer">Base32768 text writer</param>
-        public Base32768Stream(TextWriter writer)
-        {
-            this.writer = writer;
-        }
-
-        private TextReader reader;
-        private TextWriter writer;
 
         private byte[] previousBytesCache = new byte[BITS_PER_CHAR];
         private int previousBytesCacheOffset, previousBytesCacheCount;
@@ -51,6 +32,10 @@ namespace Kzrnm.Convert.Base32768
             get => throw new NotSupportedException();
             set => throw new NotSupportedException();
         }
+
+        /// <inheritdoc/>
+        /// <exception cref="NotSupportedException"/>
+        public override void Flush() => throw new NotSupportedException();
 
         /// <inheritdoc/>
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();

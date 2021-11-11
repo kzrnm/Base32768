@@ -10,6 +10,17 @@ namespace Kzrnm.Convert.Base32768
     /// </summary>
     public partial class Base32768Stream : Stream
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Base32768Stream"/>. the stream is for decoding and read only.
+        /// </summary>
+        /// <param name="reader">The reader for Base32768 text.</param>
+        public Base32768Stream(TextReader reader)
+        {
+            Utils.ThrowArgumentNullExceptionIfNull(reader);
+            this.reader = reader;
+        }
+        private TextReader reader;
+
         /// <inheritdoc/>
         public override int Read(byte[] buffer, int offset, int count)
         {
