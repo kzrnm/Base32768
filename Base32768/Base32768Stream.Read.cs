@@ -33,35 +33,21 @@ namespace Kzrnm.Convert.Base32768
             if ((uint)count > buffer.Length - offset)
                 throw new ArgumentOutOfRangeException(nameof(count));
 
+            return ReadCore(buffer, offset, count);
+        }
+        private int ReadCore(byte[] buffer, int offset, int count)
+        {
+            Debug.Assert(buffer is not null);
+            Debug.Assert(offset >= 0);
+            Debug.Assert((uint)count <= buffer.Length - offset);
+
             int readCacheSize = ReadCache(buffer, offset, count);
             offset += readCacheSize;
             count -= readCacheSize;
 
-            return ReadCore(buffer, offset, count) + readCacheSize;
+            return ReadText(buffer, offset, count) + readCacheSize;
         }
-        private int ReadCache(byte[] buffer, int offset, int count)
-        {
-            int result = 0;
-            if (previousBytesCacheCount > 0)
-            {
-                if (previousBytesCacheCount < count)
-                {
-                    Array.Copy(previousBytesCache, previousBytesCacheOffset, buffer, offset, previousBytesCacheCount);
-                    result = previousBytesCacheCount;
-                    previousBytesCacheOffset = 0;
-                    previousBytesCacheCount = 0;
-                }
-                else
-                {
-                    Array.Copy(previousBytesCache, previousBytesCacheOffset, buffer, offset, count);
-                    previousBytesCacheOffset += count;
-                    previousBytesCacheCount -= count;
-                    result = count;
-                }
-            }
-            return result;
-        }
-        private int ReadCore(byte[] buffer, int offset, int count)
+        private int ReadText(byte[] buffer, int offset, int count)
         {
             Debug.Assert(buffer is not null);
             Debug.Assert(offset >= 0);
@@ -123,7 +109,28 @@ namespace Kzrnm.Convert.Base32768
 #endif
             }
         }
-
+        private int ReadCache(byte[] buffer, int offset, int count)
+        {
+            int result = 0;
+            if (previousBytesCacheCount > 0)
+            {
+                if (previousBytesCacheCount < count)
+                {
+                    Array.Copy(previousBytesCache, previousBytesCacheOffset, buffer, offset, previousBytesCacheCount);
+                    result = previousBytesCacheCount;
+                    previousBytesCacheOffset = 0;
+                    previousBytesCacheCount = 0;
+                }
+                else
+                {
+                    Array.Copy(previousBytesCache, previousBytesCacheOffset, buffer, offset, count);
+                    previousBytesCacheOffset += count;
+                    previousBytesCacheCount -= count;
+                    result = count;
+                }
+            }
+            return result;
+        }
         private static void ClearBufferAndDecodeCore(char[] str, int offset, int count, byte[] result, int resultOffset, int resultCount)
         {
             Array.Clear(result, resultOffset, resultCount);
