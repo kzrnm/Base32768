@@ -63,7 +63,8 @@ namespace Kzrnm.Convert.Base32768
         {
             ThrowArgumentNullExceptionIfNull(stream);
             using var writer = new StringWriter();
-            EncodeCore(stream, writer);
+            using (var st = new Base32768Stream(writer))
+                stream.CopyTo(st);
             return writer.ToString();
         }
 
@@ -84,78 +85,6 @@ namespace Kzrnm.Convert.Base32768
             return sb.ToString();
         }
 #endif
-
-        internal static void EncodeCore(Stream stream, TextWriter writer)
-        {
-            const int mask = (1 << 15) - 1;
-
-            int len;
-            var bytes = new byte[15];
-            while ((len = stream.Read(bytes, 0, 15)) >= 15)
-            {
-                uint u;
-
-                u = ((uint)bytes[0] << 24) | ((uint)bytes[1] << 16) | ((uint)bytes[2] << 8) | bytes[3];
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-                writer.Write(lookupE15[(u >> (32 - 30)) & mask]);
-
-                u = (u << 30) | ((uint)bytes[4] << 22) | ((uint)bytes[5] << 14) | ((uint)bytes[6] << 6);
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-
-                u = (u << 15) | ((uint)bytes[7] << 13) | ((uint)bytes[8] << 5);
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-
-                u = (u << 15) | ((uint)bytes[9] << 12) | ((uint)bytes[10] << 4);
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-
-                u = (u << 15) | ((uint)bytes[11] << 11) | ((uint)bytes[12] << 3);
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-
-                u = (u << 15) | ((uint)bytes[13] << 10) | ((uint)bytes[14] << 2);
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-                writer.Write(lookupE15[(u >> (32 - 30)) & mask]);
-            }
-
-            var z = 0;
-            var numOBits = BITS_PER_CHAR;
-            for (int i = 0; i < len; i++)
-            {
-                var by = bytes[i];
-                if (numOBits > 8)
-                {
-                    numOBits -= 8;
-                    z |= by << numOBits;
-                }
-                else
-                {
-                    z |= by >> (8 - numOBits);
-                    writer.Write(lookupE15[z]);
-                    numOBits += 7;
-                    z = (by << numOBits) & mask;
-                }
-            }
-            if (numOBits != BITS_PER_CHAR)
-            {
-                var numZBits = BITS_PER_CHAR - numOBits;
-                var c = 7 ^ (numZBits & 0b111);
-                if (numZBits > 7)
-                {
-                    z |= (1 << c) - 1;
-                    writer.Write(lookupE15[z]);
-                }
-                else
-                {
-                    z >>= 8;
-                    z |= (1 << c) - 1;
-                    writer.Write(lookupE7[z]);
-                }
-            }
-        }
-
-        internal static unsafe void EncodeCore(byte[] bytes, int offset, int count, TextWriter writer)
-        {
-            //if ((uint)count > bytes.Length - offset)
-        }
 
         internal static unsafe void EncodeCore(byte* bytes, int count, TextWriter writer)
         {
@@ -218,6 +147,19 @@ namespace Kzrnm.Convert.Base32768
                     z >>= 8;
                     z |= (1 << c) - 1;
                     writer.Write(lookupE7[z]);
+                }
+            }
+        }
+
+        internal static unsafe void EncodeCore(byte[] bytes, int offset, int count, TextWriter writer)
+        {
+            if ((uint)count > bytes.Length - offset)
+                ThrowArgumentOutOfRangeException(nameof(count));
+            unsafe
+            {
+                fixed (byte* p = bytes)
+                {
+                    EncodeCore(p + offset, count, writer);
                 }
             }
         }

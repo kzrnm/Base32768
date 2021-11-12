@@ -16,35 +16,35 @@ namespace Kzrnm.Convert.Base32768
         }
 
         [Fact]
+        public void ReadWriteStream()
+        {
+            using var st = new Base32768Stream(new StringWriter());
+            st.Invoking(st => st.Read(null, 0, 0))
+                .Should().Throw<InvalidOperationException>().WithMessage("The stream is not readable.");
+        }
+
+        [Fact]
         public void ReadSizeZero()
         {
-            using var sr = new Base32768Stream(new StringReader("foo"));
-            sr.Read(new byte[0], 0, 0).Should().Be(0);
+            using var st = new Base32768Stream(new StringReader("foo"));
+            st.Read(new byte[0], 0, 0).Should().Be(0);
         }
 
         [Fact]
         public void ReadDisposedStream()
         {
-            var sr = new Base32768Stream(new StringWriter());
-            sr.Dispose();
-            sr.Invoking(sr => sr.Read(null, 0, 0))
+            var st = new Base32768Stream(new StringWriter());
+            st.Dispose();
+            st.Invoking(st => st.Read(null, 0, 0))
                 .Should().Throw<ObjectDisposedException>()
                 .Which.ObjectName.Should().Be("Base32768Stream");
         }
 
         [Fact]
-        public void ReadWriteStream()
-        {
-            using var sr = new Base32768Stream(new StringWriter());
-            sr.Invoking(sr => sr.Read(null, 0, 0))
-                .Should().Throw<InvalidOperationException>().WithMessage("The stream is not readable.");
-        }
-
-        [Fact]
         public void ReadNullBuffer()
         {
-            using var sr = new Base32768Stream(new StringReader("foo"));
-            sr.Invoking(sr => sr.Read(null, 0, 0))
+            using var st = new Base32768Stream(new StringReader("foo"));
+            st.Invoking(st => st.Read(null, 0, 0))
                 .Should().Throw<ArgumentNullException>()
                 .Which.ParamName.Should().Be("buffer");
         }
@@ -52,8 +52,8 @@ namespace Kzrnm.Convert.Base32768
         [Fact]
         public void ReadNegativeOffset()
         {
-            using var sr = new Base32768Stream(new StringReader("foo"));
-            sr.Invoking(sr => sr.Read(new byte[0], -1, 0))
+            using var st = new Base32768Stream(new StringReader("foo"));
+            st.Invoking(st => st.Read(new byte[0], -1, 0))
                 .Should().Throw<ArgumentOutOfRangeException>()
                 .Which.ParamName.Should().Be("offset");
         }
@@ -61,14 +61,14 @@ namespace Kzrnm.Convert.Base32768
         [Fact]
         public void ReadTooLargeCount()
         {
-            using var sr = new Base32768Stream(new StringReader("foo"));
-            sr.Invoking(sr => sr.Read(new byte[1], 0, 2))
+            using var st = new Base32768Stream(new StringReader("foo"));
+            st.Invoking(st => st.Read(new byte[1], 0, 2))
                 .Should().Throw<ArgumentOutOfRangeException>()
                 .Which.ParamName.Should().Be("count");
-            sr.Invoking(sr => sr.Read(new byte[2], 0, 3))
+            st.Invoking(st => st.Read(new byte[2], 0, 3))
                 .Should().Throw<ArgumentOutOfRangeException>()
                 .Which.ParamName.Should().Be("count");
-            sr.Invoking(sr => sr.Read(new byte[2], 1, 2))
+            st.Invoking(st => st.Read(new byte[2], 1, 2))
                 .Should().Throw<ArgumentOutOfRangeException>()
                 .Which.ParamName.Should().Be("count");
         }

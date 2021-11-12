@@ -124,7 +124,7 @@ namespace Kzrnm.Convert.Base32768
         [Theory]
         [MemberData(nameof(SimpleData))]
         [MemberData(nameof(NormalPairTestData))]
-        public void Base32768StreamDecodeReadByte(PairTestData data)
+        public void Base32768StreamReadByte(PairTestData data)
         {
             var (_, str, bytes) = data;
             using var reader = new StringReader(str);
@@ -141,7 +141,7 @@ namespace Kzrnm.Convert.Base32768
         [Theory]
         [MemberData(nameof(SimpleData))]
         [MemberData(nameof(NormalPairTestData))]
-        public void Base32768StreamDecodeRead(PairTestData data)
+        public void Base32768StreamRead(PairTestData data)
         {
             var (_, str, bytes) = data;
             foreach (int bufferSize in new[] { 1, 2, 3, 5, 7, 8, 9, 13, 14, 15, 16, 17, 20 })
@@ -156,6 +156,57 @@ namespace Kzrnm.Convert.Base32768
                     list.AddRange(buffer.Take(len));
                 }
                 list.Should().Equal(bytes, "buffer size: {0} is positive", bufferSize);
+            }
+        }
+
+
+        [Theory]
+        [MemberData(nameof(SimpleData))]
+        [MemberData(nameof(NormalPairTestData))]
+        public void Base32768StreamEncode(PairTestData data)
+        {
+            var (_, str, bytes) = data;
+            using var ms = new MemoryStream(bytes);
+            using var writer = new StringWriter();
+            using (var st = new Base32768Stream(writer))
+            {
+                ms.CopyTo(st);
+            }
+            writer.ToString().Should().Be(str);
+        }
+
+        [Theory]
+        [MemberData(nameof(SimpleData))]
+        [MemberData(nameof(NormalPairTestData))]
+        public void Base32768StreamWriteByte(PairTestData data)
+        {
+            var (_, str, bytes) = data;
+            using var writer = new StringWriter();
+            using (var st = new Base32768Stream(writer))
+            {
+                foreach (var b in bytes)
+                    st.WriteByte(b);
+            }
+            writer.ToString().Should().Be(str);
+        }
+
+        [Theory]
+        [MemberData(nameof(SimpleData))]
+        [MemberData(nameof(NormalPairTestData))]
+        public void Base32768StreamWrite(PairTestData data)
+        {
+            var (_, str, bytes) = data;
+            foreach (int bufferSize in new[] { 1, 2, 3, 5, 7, 8, 9, 13, 14, 15, 16, 17, 20 })
+            {
+                using var writer = new StringWriter();
+                using (var st = new Base32768Stream(writer))
+                {
+                    for (int offset = 0; offset < bytes.Length; offset += bufferSize)
+                    {
+                        st.Write(bytes, offset, Math.Min(bufferSize, bytes.Length - offset));
+                    }
+                }
+                writer.ToString().Should().Be(str, "buffer size: {0} is positive", bufferSize);
             }
         }
 

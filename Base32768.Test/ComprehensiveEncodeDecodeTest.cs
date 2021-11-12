@@ -49,15 +49,17 @@ namespace Kzrnm.Convert.Base32768
             Base32768.Encode(bytes).Should().Be(str);
             Base32768.Decode(str).Should().Equal(bytes);
             Base32768.Encode(bytes.ToStream()).Should().Be(str);
-            Base32768StreamDecodeReadByte(str, bytes);
-            Base32768StreamDecodeRead(str, bytes);
+            Base32768StreamReadByte(str, bytes);
+            Base32768StreamRead(str, bytes);
+            Base32768StreamWriteByte(str, bytes);
+            Base32768StreamWrite(str, bytes);
 #if NETCOREAPP3_1_OR_GREATER
             Base32768.Encode(bytes.AsSpan()).Should().Be(str);
             Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
 #endif
         }
 
-        private static void Base32768StreamDecodeReadByte(string str, byte[] bytes)
+        private static void Base32768StreamReadByte(string str, byte[] bytes)
         {
             using var reader = new StringReader(str);
             using var st = new Base32768Stream(reader);
@@ -70,7 +72,7 @@ namespace Kzrnm.Convert.Base32768
             list.Should().Equal(bytes);
         }
 
-        private static void Base32768StreamDecodeRead(string str, byte[] bytes)
+        private static void Base32768StreamRead(string str, byte[] bytes)
         {
             foreach (int bufferSize in new[] { 1, 2, 3, 5, 7, 8, 9, 13, 14, 15, 16, 17, 20 })
             {
@@ -84,6 +86,34 @@ namespace Kzrnm.Convert.Base32768
                     list.AddRange(buffer.Take(len));
                 }
                 list.Should().Equal(bytes, "buffer size: {0} is positive", bufferSize);
+            }
+        }
+
+
+        private static void Base32768StreamWriteByte(string str, byte[] bytes)
+        {
+            using var writer = new StringWriter();
+            using (var st = new Base32768Stream(writer))
+            {
+                foreach (var b in bytes)
+                    st.WriteByte(b);
+            }
+            writer.ToString().Should().Be(str);
+        }
+
+        private static void Base32768StreamWrite(string str, byte[] bytes)
+        {
+            foreach (int bufferSize in new[] { 1, 2, 3, 5, 7, 8, 9, 13, 14, 15, 16, 17, 20 })
+            {
+                using var writer = new StringWriter();
+                using (var st = new Base32768Stream(writer))
+                {
+                    for (int offset = 0; offset < bytes.Length; offset += bufferSize)
+                    {
+                        st.Write(bytes, offset, Math.Min(bufferSize, bytes.Length - offset));
+                    }
+                }
+                writer.ToString().Should().Be(str, "buffer size: {0} is positive", bufferSize);
             }
         }
     }
