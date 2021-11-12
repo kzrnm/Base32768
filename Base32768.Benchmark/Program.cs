@@ -1,11 +1,11 @@
-﻿using BenchmarkDotNet.Attributes;
+﻿using System;
+using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains.CsProj;
 using Kzrnm.Convert.Base32768;
-using System;
 
 _ = BenchmarkRunner.Run(typeof(Base32768Benchmark).Assembly);
 

@@ -17,6 +17,7 @@ Install-Package Base32768
 
 ```C#
 using System;
+using System.IO;
 using Kzrnm.Convert.Base32768;
 
 var byteArray = new byte[] { 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100 };
@@ -36,6 +37,30 @@ Console.WriteLine(str);
 byteArray2 = Base32768.Decode(str.AsSpan());
 Console.WriteLine(string.Join(", ", byteArray2));
 //// [104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]
+
+
+// Stream API
+{
+    using var textWriter = new StringWriter();
+    using (var stream = new Base32768Stream(textWriter))
+    {
+        stream.Write(stackalloc byte[] { 104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100 });
+    }
+    textWriter.ToString();
+//// 6 code points, "媒腻㐤┖ꈳ埳"
+}
+{
+    using var ms = new MemoryStream();
+    using var textReader = new StringReader("媒腻㐤┖ꈳ埳");
+    using (var stream = new Base32768Stream(textReader))
+    {
+        stream.CopyTo(ms);
+    }
+    Console.WriteLine(string.Join(", ", ms.ToArray()));
+//// [104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100]
+}
+
+
 ```
 
 ## Benchmark
