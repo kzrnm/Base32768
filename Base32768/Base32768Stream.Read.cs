@@ -52,10 +52,11 @@ namespace Kzrnm.Convert.Base32768
             Debug.Assert(buffer is not null);
             Debug.Assert(offset >= 0);
             Debug.Assert((uint)count <= buffer.Length - offset);
-            Debug.Assert(previousBytesCacheCount == 0);
 
             if (count == 0)
                 return 0;
+
+            Debug.Assert(previousBytesCacheCount == 0);
 
             int nextByteSize = MathUtil.CeilingNth(count, BITS_PER_CHAR);
             int nextCharSize = nextByteSize * BITS_PER_BYTE / BITS_PER_CHAR;
@@ -114,7 +115,7 @@ namespace Kzrnm.Convert.Base32768
             int result = 0;
             if (previousBytesCacheCount > 0)
             {
-                if (previousBytesCacheCount < count)
+                if (previousBytesCacheCount <= count)
                 {
                     Array.Copy(previousBytesCache, previousBytesCacheOffset, buffer, offset, previousBytesCacheCount);
                     result = previousBytesCacheCount;

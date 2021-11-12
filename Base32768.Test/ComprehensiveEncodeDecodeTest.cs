@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using FluentAssertions;
@@ -47,15 +48,29 @@ namespace Kzrnm.Convert.Base32768
             }
         }
 
-        private void EncodeAndDecode(string str, byte[] bytes)
+        private static void EncodeAndDecode(string str, byte[] bytes)
         {
             Base32768.Encode(bytes).Should().Be(str);
             Base32768.Decode(str).Should().Equal(bytes);
             Base32768.Encode(bytes.ToStream()).Should().Be(str);
+            Base32768StreamDecodeReadByte(str, bytes);
 #if NETCOREAPP3_1_OR_GREATER
             Base32768.Encode(bytes.AsSpan()).Should().Be(str);
             Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
 #endif
+        }
+
+        private static void Base32768StreamDecodeReadByte(string str, byte[] bytes)
+        {
+            using var reader = new StringReader(str);
+            using var st = new Base32768Stream(reader);
+            int b;
+            var list = new List<byte>();
+            while ((b = st.ReadByte()) >= 0)
+            {
+                list.Add((byte)b);
+            }
+            list.Should().Equal(bytes);
         }
     }
 }

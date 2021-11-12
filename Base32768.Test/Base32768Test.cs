@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -76,21 +77,24 @@ namespace Kzrnm.Convert.Base32768
         [MemberData(nameof(NormalPairTestData))]
         public void Encode(PairTestData data)
         {
-            Base32768.Encode(data.Bytes).Should().Be(data.String);
+            var (_, str, bytes) = data;
+            Base32768.Encode(bytes).Should().Be(str);
         }
         [Theory]
         [MemberData(nameof(SimpleData))]
         [MemberData(nameof(NormalPairTestData))]
         public void Decode(PairTestData data)
         {
-            Base32768.Decode(data.String).Should().Equal(data.Bytes);
+            var (_, str, bytes) = data;
+            Base32768.Decode(str).Should().Equal(bytes);
         }
         [Theory]
         [MemberData(nameof(SimpleData))]
         [MemberData(nameof(NormalPairTestData))]
         public void EncodeStream(PairTestData data)
         {
-            Base32768.Encode(data.Bytes.ToStream()).Should().Be(data.String);
+            var (_, str, bytes) = data;
+            Base32768.Encode(bytes.ToStream()).Should().Be(str);
         }
 
 
@@ -106,14 +110,33 @@ namespace Kzrnm.Convert.Base32768
         [MemberData(nameof(NormalPairTestData))]
         public void Base32768StreamDecode(PairTestData data)
         {
+            var (_, str, bytes) = data;
             using var decodedMemoryStream = new MemoryStream();
-            using (var textReader = new StringReader(data.String))
+            using (var textReader = new StringReader(str))
             using (var decoder = new Base32768Stream(textReader))
             {
                 decoder.CopyTo(decodedMemoryStream);
             }
             var gotBytes = decodedMemoryStream.ToArray();
-            gotBytes.Should().Equal(data.Bytes);
+            gotBytes.Should().Equal(bytes);
+        }
+
+
+        [Theory]
+        [MemberData(nameof(SimpleData))]
+        [MemberData(nameof(NormalPairTestData))]
+        public void Base32768StreamDecodeReadByte(PairTestData data)
+        {
+            var (_, str, bytes) = data;
+            using var reader = new StringReader(str);
+            using var st = new Base32768Stream(reader);
+            int b;
+            var list = new List<byte>();
+            while ((b = st.ReadByte()) >= 0)
+            {
+                list.Add((byte)b);
+            }
+            list.Should().Equal(bytes);
         }
 
 #if NETCOREAPP3_1_OR_GREATER
@@ -122,14 +145,16 @@ namespace Kzrnm.Convert.Base32768
         [MemberData(nameof(NormalPairTestData))]
         public void EncodeSpan(PairTestData data)
         {
-            Base32768.Encode(data.Bytes.AsSpan()).Should().Be(data.String);
+            var (_, str, bytes) = data;
+            Base32768.Encode(bytes.AsSpan()).Should().Be(str);
         }
         [Theory]
         [MemberData(nameof(SimpleData))]
         [MemberData(nameof(NormalPairTestData))]
         public void DecodeSpan(PairTestData data)
         {
-            Base32768.Decode(data.String.AsSpan()).Should().Equal(data.Bytes);
+            var (_, str, bytes) = data;
+            Base32768.Decode(str.AsSpan()).Should().Equal(bytes);
         }
 
         [Theory]
