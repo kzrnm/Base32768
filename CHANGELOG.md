@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - Unreleased
 ### Add
 - Stream API
+- Support .NET Framework 3.5
 
 ## [1.0.9] - 2020-12-18
 ### Added
