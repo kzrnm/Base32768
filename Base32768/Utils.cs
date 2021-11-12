@@ -26,7 +26,15 @@ namespace Kzrnm.Convert.Base32768
         public static void ThrowArgumentNullExceptionIfNull(object argument, [CallerArgumentExpression("argument")] string paramName = null)
         {
             if (argument is null)
-                throw new ArgumentNullException(paramName);
+                ThrowArgumentNullException(paramName);
+
+            static void ThrowArgumentNullException(string paramName)
+                => throw new ArgumentNullException(paramName);
         }
+
+        public static void ThrowArgumentOutOfRangeException(string paramName)
+            => throw new ArgumentOutOfRangeException(paramName);
+        public static void ThrowArgumentOutOfRangeException(string paramName, string message)
+            => throw new ArgumentOutOfRangeException(paramName, message);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using static Kzrnm.Convert.Base32768.Base32768;
@@ -24,7 +25,38 @@ namespace Kzrnm.Convert.Base32768
         /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
         {
+            EnsureNotDisposed();
+            EnsureWritable();
+
+            // TODO
             throw new NotImplementedException();
+        }
+
+
+        /// <inheritdoc/>
+        public override void Flush()
+        {
+            EnsureNotDisposed();
+            if (writer is not null)
+                FlushBuffer();
+        }
+
+        private void FlushBuffer()
+        {
+            Debug.Assert(previousBytesCacheOffset == 0);
+            if (previousBytesCacheCount > 0)
+            {
+                // TODO
+                throw new NotImplementedException();
+            }
+            writer.Flush();
+        }
+
+        private void DisposeWriter()
+        {
+            FlushBuffer();
+            writer.Dispose();
+            writer = null;
         }
     }
 }

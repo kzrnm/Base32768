@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using static Kzrnm.Convert.Base32768.Base32768;
+using static Kzrnm.Convert.Base32768.Utils;
 
 namespace Kzrnm.Convert.Base32768
 {
@@ -27,11 +28,11 @@ namespace Kzrnm.Convert.Base32768
             EnsureNotDisposed();
             EnsureReadable();
             if (buffer is null)
-                throw new ArgumentNullException(nameof(buffer));
+                ThrowArgumentNullExceptionIfNull(buffer);
             if (offset < 0)
-                throw new ArgumentOutOfRangeException(nameof(offset), "offset must not be negative.");
+                ThrowArgumentOutOfRangeException(nameof(offset), "offset must not be negative.");
             if ((uint)count > buffer.Length - offset)
-                throw new ArgumentOutOfRangeException(nameof(count));
+                ThrowArgumentOutOfRangeException(nameof(count));
 
             return ReadCore(buffer, offset, count);
         }
@@ -136,6 +137,12 @@ namespace Kzrnm.Convert.Base32768
         {
             Array.Clear(result, resultOffset, resultCount);
             DecodeCore(str, offset, count, result, resultOffset, resultCount);
+        }
+
+        private void DisposeReader()
+        {
+            reader.Dispose();
+            reader = null;
         }
     }
 }

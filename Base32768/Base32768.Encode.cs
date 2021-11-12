@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
+using static Kzrnm.Convert.Base32768.Utils;
 /*
 Base32768 is a binary-to-text encoding optimised for UTF-16-encoded text.
 (e.g. Windows, Java, JavaScript)
@@ -45,6 +44,7 @@ namespace Kzrnm.Convert.Base32768
         /// <returns>Base32768 encoded data</returns>
         public static unsafe string Encode(byte[] bytes)
         {
+            ThrowArgumentNullExceptionIfNull(bytes);
             var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
             using var writer = new StringWriter(sb);
             fixed (byte* p = bytes)
@@ -61,12 +61,31 @@ namespace Kzrnm.Convert.Base32768
         /// <returns>Base32768 encoded data</returns>
         public static string Encode(Stream stream)
         {
+            ThrowArgumentNullExceptionIfNull(stream);
             using var writer = new StringWriter();
             EncodeCore(stream, writer);
             return writer.ToString();
         }
 
-        private static void EncodeCore(Stream stream, TextWriter writer)
+#if NETSTANDARD2_1_OR_GREATER
+        /// <summary>
+        /// Encode a binary data to Base32768.
+        /// </summary>
+        /// <param name="bytes">original binary data</param>
+        /// <returns>Base32768 encoded data</returns>
+        public static unsafe string Encode(ReadOnlySpan<byte> bytes)
+        {
+            var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
+            using var writer = new StringWriter(sb);
+            fixed (byte* p = bytes)
+            {
+                EncodeCore(p, bytes.Length, writer);
+            }
+            return sb.ToString();
+        }
+#endif
+
+        internal static void EncodeCore(Stream stream, TextWriter writer)
         {
             const int mask = (1 << 15) - 1;
 
@@ -133,24 +152,12 @@ namespace Kzrnm.Convert.Base32768
             }
         }
 
-#if NETSTANDARD2_1_OR_GREATER
-        /// <summary>
-        /// Encode a binary data to Base32768.
-        /// </summary>
-        /// <param name="bytes">original binary data</param>
-        /// <returns>Base32768 encoded data</returns>
-        public static unsafe string Encode(ReadOnlySpan<byte> bytes)
+        internal static unsafe void EncodeCore(byte[] bytes, int offset, int count, TextWriter writer)
         {
-            var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
-            using var writer = new StringWriter(sb);
-            fixed (byte* p = bytes)
-            {
-                EncodeCore(p, bytes.Length, writer);
-            }
-            return sb.ToString();
+            //if ((uint)count > bytes.Length - offset)
         }
-#endif
-        private static unsafe void EncodeCore(byte* bytes, int count, TextWriter writer)
+
+        internal static unsafe void EncodeCore(byte* bytes, int count, TextWriter writer)
         {
             const int mask = (1 << 15) - 1;
 

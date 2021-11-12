@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using static Kzrnm.Convert.Base32768.Utils;
+
 /*
 Base32768 is a binary-to-text encoding optimised for UTF-16-encoded text.
 (e.g. Windows, Java, JavaScript)
@@ -41,16 +43,20 @@ namespace Kzrnm.Convert.Base32768
         /// <param name="str">Base32768 encoded data</param>
         /// <returns>original binary data</returns>
         public static byte[] Decode(string str)
+        {
+            ThrowArgumentNullExceptionIfNull(str);
 #if NETSTANDARD2_1_OR_GREATER
-            => Decode(str.AsSpan());
+            return Decode(str.AsSpan());
+        }
+
         /// <summary>
         /// Decodes a Base32768.
         /// </summary>
         /// <param name="str">Base32768 encoded data</param>
         /// <returns>original binary data</returns>
         public static byte[] Decode(ReadOnlySpan<char> str)
-#endif
         {
+#endif
             if (str.Length == 0)
                 return
 #if NETSTANDARD1_0
@@ -60,11 +66,13 @@ namespace Kzrnm.Convert.Base32768
 #endif
             var res = new byte[CalculateByteLength(str.Length, str[str.Length - 1])];
 
-#if NETSTANDARD2_1_OR_GREATER
-            DecodeCore(str, res, 0, res.Length);
-#else
-            DecodeCore(str, 0, str.Length, res, 0, res.Length);
-#endif
+            unsafe
+            {
+                fixed (char* p = str)
+                {
+                    DecodeCore(p, str.Length, res, 0, res.Length);
+                }
+            }
             return res;
         }
 
@@ -209,34 +217,16 @@ namespace Kzrnm.Convert.Base32768
             }
         }
 
-#if NETSTANDARD2_1_OR_GREATER
-        internal static unsafe void DecodeCore(ReadOnlySpan<char> str, byte[] result, int resultOffset, int resultCount)
+        internal static void DecodeCore(char[] str, int offset, int count, byte[] result, int resultOffset, int resultCount)
         {
-            fixed (char* p = str)
+            if ((uint)count > str.Length - offset)
+                ThrowArgumentOutOfRangeException(nameof(count));
+            unsafe
             {
-                DecodeCore(p, str.Length, result, resultOffset, resultCount);
-            }
-        }
-#else
-        internal static unsafe void DecodeCore(string str, int offset, int count, byte[] result, int resultOffset, int resultCount)
-        {
-            if (offset + count > str.Length)
-                throw new ArgumentOutOfRangeException(nameof(count));
-
-            fixed (char* p = str)
-            {
-                DecodeCore(p + offset, count, result, resultOffset, resultCount);
-            }
-        }
-#endif
-        internal static unsafe void DecodeCore(char[] str, int offset, int count, byte[] result, int resultOffset, int resultCount)
-        {
-            if (offset + count > str.Length)
-                throw new ArgumentOutOfRangeException(nameof(count));
-
-            fixed (char* p = str)
-            {
-                DecodeCore(p + offset, count, result, resultOffset, resultCount);
+                fixed (char* p = str)
+                {
+                    DecodeCore(p + offset, count, result, resultOffset, resultCount);
+                }
             }
         }
     }

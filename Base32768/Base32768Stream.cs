@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using static Kzrnm.Convert.Base32768.Base32768;
 
@@ -34,10 +35,6 @@ namespace Kzrnm.Convert.Base32768
         }
 
         /// <inheritdoc/>
-        /// <exception cref="NotSupportedException"/>
-        public override void Flush() => throw new NotSupportedException();
-
-        /// <inheritdoc/>
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
 
         /// <inheritdoc/>
@@ -49,16 +46,24 @@ namespace Kzrnm.Convert.Base32768
         {
             if (disposing)
             {
-                reader?.Dispose();
-                reader = null;
+                if (reader is not null)
+                {
+                    DisposeReader();
+                }
 
-                writer?.Dispose();
-                writer = null;
+                if (writer is not null)
+                {
+                    DisposeWriter();
+                }
+
+                Debug.Assert(reader is null);
+                Debug.Assert(writer is null);
 
                 previousBytesCache = null;
             }
             base.Dispose(disposing);
         }
+
 
         private void EnsureNotDisposed()
         {
