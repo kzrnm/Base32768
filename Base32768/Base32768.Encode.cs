@@ -64,7 +64,18 @@ namespace Kzrnm.Convert.Base32768
             ThrowArgumentNullExceptionIfNull(stream);
             using var writer = new StringWriter();
             using (var st = new Base32768Stream(writer))
+            {
+#if NETSTANDARD1_0_OR_GREATER
                 stream.CopyTo(st);
+#else
+                var buffer = new byte[81920];
+                int writedSize;
+                while ((writedSize = stream.Read(buffer, 0, buffer.Length)) != 0)
+                {
+                    st.Write(buffer, 0, writedSize);
+                }
+#endif
+            }
             return writer.ToString();
         }
 

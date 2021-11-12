@@ -59,10 +59,10 @@ namespace Kzrnm.Convert.Base32768
 #endif
             if (str.Length == 0)
                 return
-#if NETSTANDARD1_0
-                    new byte[0];
-#else
+#if NETSTANDARD1_3_OR_GREATER
                     Array.Empty<byte>();
+#else
+                    new byte[0];
 #endif
             var res = new byte[CalculateByteLength(str.Length, str[str.Length - 1])];
 
