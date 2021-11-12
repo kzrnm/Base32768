@@ -48,10 +48,11 @@ jobs:
             fi
             IS_NEW=true
           elif [ "${{ steps.check-tag.outputs.exists }}" = "false" ]; then
-            if [ "${{ steps.get-version.outputs.version-suffix }}" = "" ]; then
-              echo "new version tag project: ${{ steps.get-version.outputs.version }}"
-              IS_NEW=true
+            echo "new version tag project: ${{ steps.get-version.outputs.version }}"
+            if [ "${{ steps.get-version.outputs.version-suffix }}" != "" ]; then
+              IS_PRE=true
             fi
+            IS_NEW=true
           fi
           echo "::set-output name=is-new::$IS_NEW"
           echo "::set-output name=is-prerelease::$IS_PRE"
@@ -60,17 +61,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install dotnet-format
-        run: dotnet tool install --global dotnet-format
+      - name: Setup .NET Core SDK 6.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
       - name: Format
-        run: dotnet format ${{ env.WORKFLOW_BUILD_SLN }} --check
+        run: dotnet format ${{ env.WORKFLOW_BUILD_SLN }} --verify-no-changes
 
   build:
     runs-on: windows-latest
     needs: [get-version]
     steps:
       - uses: actions/checkout@v2
-      - name: Setup .NET SDK
+      - name: Setup .NET SDK .NET 6
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - name: Setup .NET SDK .NET 5
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 5.0.x
@@ -80,12 +87,8 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
-      - name: Install dependencies
-        run: dotnet restore ${{ env.WORKFLOW_BUILD_SLN }}
-      - name: Build
-        run: dotnet build ${{ env.WORKFLOW_BUILD_SLN }} --no-restore -c Release
-      - name: Test
-        run: dotnet test ${{ env.WORKFLOW_BUILD_SLN }} --no-restore --verbosity normal -c Release --logger GitHubActions
+      - name: Build & Test
+        run: dotnet test ${{ env.WORKFLOW_BUILD_SLN }} --logger GitHubActions -c Release
       - uses: actions/upload-artifact@v1
         if: ${{ needs.get-version.outputs.is-new == 'true' }}
         with:
