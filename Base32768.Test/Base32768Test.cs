@@ -121,7 +121,6 @@ namespace Kzrnm.Convert.Base32768
             gotBytes.Should().Equal(bytes);
         }
 
-
         [Theory]
         [MemberData(nameof(SimpleData))]
         [MemberData(nameof(NormalPairTestData))]
@@ -137,6 +136,27 @@ namespace Kzrnm.Convert.Base32768
                 list.Add((byte)b);
             }
             list.Should().Equal(bytes);
+        }
+
+        [Theory]
+        [MemberData(nameof(SimpleData))]
+        [MemberData(nameof(NormalPairTestData))]
+        public void Base32768StreamDecodeRead(PairTestData data)
+        {
+            var (_, str, bytes) = data;
+            foreach (int bufferSize in new[] { 1, 2, 3, 5, 7, 8, 9, 13, 14, 15, 16, 17, 20 })
+            {
+                using var reader = new StringReader(str);
+                using var st = new Base32768Stream(reader);
+                var buffer = new byte[bufferSize];
+                int len;
+                var list = new List<byte>();
+                while ((len = st.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    list.AddRange(buffer.Take(len));
+                }
+                list.Should().Equal(bytes, "buffer size: {0} is positive", bufferSize);
+            }
         }
 
 #if NETCOREAPP3_1_OR_GREATER

@@ -72,3 +72,6 @@ dotnet_style_qualification_for_property = false:none
 # .NET Standard 2.0 or older
 csharp_style_prefer_index_operator = false:none
 csharp_style_prefer_range_operator = false:none
+
+# CA1825: ’·‚³ 0 ‚Ì”z—ñ‚ÍŠ„‚è“–‚Ä•s‰Â
+dotnet_diagnostic.CA1825.severity = none
