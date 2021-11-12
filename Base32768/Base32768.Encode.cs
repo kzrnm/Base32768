@@ -43,16 +43,14 @@ namespace Kzrnm.Convert.Base32768
         /// </summary>
         /// <param name="bytes">original binary data</param>
         /// <returns>Base32768 encoded data</returns>
-        public static string Encode(byte[] bytes)
+        public static unsafe string Encode(byte[] bytes)
         {
             var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
             using var writer = new StringWriter(sb);
-#if NETSTANDARD2_1_OR_GREATER
-            EncodeCore(bytes, writer);
-#else
-            EncodeCore(new MemoryStream(bytes), writer);
-#endif
-            writer.Flush();
+            fixed (byte* p = bytes)
+            {
+                EncodeCore(p, bytes.Length, writer);
+            }
             return sb.ToString();
         }
 
@@ -67,6 +65,7 @@ namespace Kzrnm.Convert.Base32768
             EncodeCore(stream, writer);
             return writer.ToString();
         }
+
         private static void EncodeCore(Stream stream, TextWriter writer)
         {
             const int mask = (1 << 15) - 1;
@@ -140,47 +139,51 @@ namespace Kzrnm.Convert.Base32768
         /// </summary>
         /// <param name="bytes">original binary data</param>
         /// <returns>Base32768 encoded data</returns>
-        public static string Encode(ReadOnlySpan<byte> bytes)
+        public static unsafe string Encode(ReadOnlySpan<byte> bytes)
         {
             var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
             using var writer = new StringWriter(sb);
-            EncodeCore(bytes, writer);
+            fixed (byte* p = bytes)
+            {
+                EncodeCore(p, bytes.Length, writer);
+            }
             return sb.ToString();
         }
-        private static void EncodeCore(ReadOnlySpan<byte> bytes, TextWriter writer)
+#endif
+        private static unsafe void EncodeCore(byte* bytes, int count, TextWriter writer)
         {
             const int mask = (1 << 15) - 1;
 
-            while (bytes.Length >= 15)
+            for (; count >= 15; count -= 15)
             {
                 uint u;
 
-                u = ((uint)bytes[0] << 24) | ((uint)bytes[1] << 16) | ((uint)bytes[2] << 8) | bytes[3];
+                u = ((uint)*bytes++ << 24) | ((uint)*bytes++ << 16) | ((uint)*bytes++ << 8) | *bytes++;
                 writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
                 writer.Write(lookupE15[(u >> (32 - 30)) & mask]);
 
-                u = (u << 30) | ((uint)bytes[4] << 22) | ((uint)bytes[5] << 14) | ((uint)bytes[6] << 6);
+                u = (u << 30) | ((uint)*bytes++ << 22) | ((uint)*bytes++ << 14) | ((uint)*bytes++ << 6);
                 writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
-                u = (u << 15) | ((uint)bytes[7] << 13) | ((uint)bytes[8] << 5);
+                u = (u << 15) | ((uint)*bytes++ << 13) | ((uint)*bytes++ << 5);
                 writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
-                u = (u << 15) | ((uint)bytes[9] << 12) | ((uint)bytes[10] << 4);
+                u = (u << 15) | ((uint)*bytes++ << 12) | ((uint)*bytes++ << 4);
                 writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
-                u = (u << 15) | ((uint)bytes[11] << 11) | ((uint)bytes[12] << 3);
+                u = (u << 15) | ((uint)*bytes++ << 11) | ((uint)*bytes++ << 3);
                 writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
-                u = (u << 15) | ((uint)bytes[13] << 10) | ((uint)bytes[14] << 2);
+                u = (u << 15) | ((uint)*bytes++ << 10) | ((uint)*bytes++ << 2);
                 writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
                 writer.Write(lookupE15[(u >> (32 - 30)) & mask]);
-                bytes = bytes[15..];
             }
 
             var z = 0;
             var numOBits = BITS_PER_CHAR;
-            foreach (var by in bytes)
+            for (int i = 0; i < count; i++, bytes++)
             {
+                var by = *bytes;
                 if (numOBits > 8)
                 {
                     numOBits -= 8;
@@ -211,6 +214,5 @@ namespace Kzrnm.Convert.Base32768
                 }
             }
         }
-#endif
     }
 }
