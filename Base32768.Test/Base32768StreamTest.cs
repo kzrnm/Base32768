@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
-using Xunit;
 using FluentAssertions;
+using Xunit;
 
 namespace Kzrnm.Convert.Base32768
 {

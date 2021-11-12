@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Text;
 using System.IO;
+using System.Text;
 using static Kzrnm.Convert.Base32768.Base32768;
 
 namespace Kzrnm.Convert.Base32768
