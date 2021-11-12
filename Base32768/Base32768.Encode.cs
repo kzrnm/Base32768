@@ -46,11 +46,13 @@ namespace Kzrnm.Convert.Base32768
         public static string Encode(byte[] bytes)
         {
             var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
+            using var writer = new StringWriter(sb);
 #if NETSTANDARD2_1_OR_GREATER
-            EncodeCore(bytes, sb);
+            EncodeCore(bytes, writer);
 #else
-            EncodeCore(new MemoryStream(bytes), sb);
+            EncodeCore(new MemoryStream(bytes), writer);
 #endif
+            writer.Flush();
             return sb.ToString();
         }
 
@@ -61,11 +63,11 @@ namespace Kzrnm.Convert.Base32768
         /// <returns>Base32768 encoded data</returns>
         public static string Encode(Stream stream)
         {
-            var sb = new StringBuilder();
-            EncodeCore(stream, sb);
-            return sb.ToString();
+            using var writer = new StringWriter();
+            EncodeCore(stream, writer);
+            return writer.ToString();
         }
-        private static void EncodeCore(Stream stream, StringBuilder sb)
+        private static void EncodeCore(Stream stream, TextWriter writer)
         {
             const int mask = (1 << 15) - 1;
 
@@ -76,24 +78,24 @@ namespace Kzrnm.Convert.Base32768
                 uint u;
 
                 u = ((uint)bytes[0] << 24) | ((uint)bytes[1] << 16) | ((uint)bytes[2] << 8) | bytes[3];
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
-                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 30)) & mask]);
 
                 u = (u << 30) | ((uint)bytes[4] << 22) | ((uint)bytes[5] << 14) | ((uint)bytes[6] << 6);
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
                 u = (u << 15) | ((uint)bytes[7] << 13) | ((uint)bytes[8] << 5);
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
                 u = (u << 15) | ((uint)bytes[9] << 12) | ((uint)bytes[10] << 4);
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
                 u = (u << 15) | ((uint)bytes[11] << 11) | ((uint)bytes[12] << 3);
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
                 u = (u << 15) | ((uint)bytes[13] << 10) | ((uint)bytes[14] << 2);
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
-                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 30)) & mask]);
             }
 
             var z = 0;
@@ -109,7 +111,7 @@ namespace Kzrnm.Convert.Base32768
                 else
                 {
                     z |= by >> (8 - numOBits);
-                    sb.Append(lookupE15[z]);
+                    writer.Write(lookupE15[z]);
                     numOBits += 7;
                     z = (by << numOBits) & mask;
                 }
@@ -121,13 +123,13 @@ namespace Kzrnm.Convert.Base32768
                 if (numZBits > 7)
                 {
                     z |= (1 << c) - 1;
-                    sb.Append(lookupE15[z]);
+                    writer.Write(lookupE15[z]);
                 }
                 else
                 {
                     z >>= 8;
                     z |= (1 << c) - 1;
-                    sb.Append(lookupE7[z]);
+                    writer.Write(lookupE7[z]);
                 }
             }
         }
@@ -141,10 +143,11 @@ namespace Kzrnm.Convert.Base32768
         public static string Encode(ReadOnlySpan<byte> bytes)
         {
             var sb = new StringBuilder((BITS_PER_BYTE * bytes.Length + (BITS_PER_CHAR - 1)) / BITS_PER_CHAR);
-            EncodeCore(bytes, sb);
+            using var writer = new StringWriter(sb);
+            EncodeCore(bytes, writer);
             return sb.ToString();
         }
-        private static void EncodeCore(ReadOnlySpan<byte> bytes, StringBuilder sb)
+        private static void EncodeCore(ReadOnlySpan<byte> bytes, TextWriter writer)
         {
             const int mask = (1 << 15) - 1;
 
@@ -153,24 +156,24 @@ namespace Kzrnm.Convert.Base32768
                 uint u;
 
                 u = ((uint)bytes[0] << 24) | ((uint)bytes[1] << 16) | ((uint)bytes[2] << 8) | bytes[3];
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
-                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 30)) & mask]);
 
                 u = (u << 30) | ((uint)bytes[4] << 22) | ((uint)bytes[5] << 14) | ((uint)bytes[6] << 6);
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
                 u = (u << 15) | ((uint)bytes[7] << 13) | ((uint)bytes[8] << 5);
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
                 u = (u << 15) | ((uint)bytes[9] << 12) | ((uint)bytes[10] << 4);
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
                 u = (u << 15) | ((uint)bytes[11] << 11) | ((uint)bytes[12] << 3);
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
 
                 u = (u << 15) | ((uint)bytes[13] << 10) | ((uint)bytes[14] << 2);
-                sb.Append(lookupE15[(u >> (32 - 15)) & mask]);
-                sb.Append(lookupE15[(u >> (32 - 30)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
+                writer.Write(lookupE15[(u >> (32 - 30)) & mask]);
                 bytes = bytes[15..];
             }
 
@@ -186,7 +189,7 @@ namespace Kzrnm.Convert.Base32768
                 else
                 {
                     z |= by >> (8 - numOBits);
-                    sb.Append(lookupE15[z]);
+                    writer.Write(lookupE15[z]);
                     numOBits += 7;
                     z = (by << numOBits) & mask;
                 }
@@ -198,13 +201,13 @@ namespace Kzrnm.Convert.Base32768
                 if (numZBits > 7)
                 {
                     z |= (1 << c) - 1;
-                    sb.Append(lookupE15[z]);
+                    writer.Write(lookupE15[z]);
                 }
                 else
                 {
                     z >>= 8;
                     z |= (1 << c) - 1;
-                    sb.Append(lookupE7[z]);
+                    writer.Write(lookupE7[z]);
                 }
             }
         }
