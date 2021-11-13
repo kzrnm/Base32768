@@ -42,17 +42,8 @@ public class Base32768Benchmark
     }
 
     [Benchmark]
-    [BenchmarkCategory("Encode")]
-    public string OldEncode() => Base32768Old.Encode(bytes);
-    [Benchmark]
-    [BenchmarkCategory("Encode")]
-    public string NewEncode() => Base32768.Encode(bytes);
+    public string Encode() => Base32768.Encode(bytes);
 
     [Benchmark]
-    [BenchmarkCategory("Decode")]
-    public byte[] OldDecode() => Base32768Old.Decode(str);
-
-    [Benchmark]
-    [BenchmarkCategory("Decode")]
-    public byte[] NewDecode() => Base32768.Decode(str);
+    public byte[] Decode() => Base32768.Decode(str);
 }
