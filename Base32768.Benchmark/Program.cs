@@ -16,13 +16,14 @@ public class BenchmarkConfig : ManualConfig
     {
         AddDiagnoser(MemoryDiagnoser.Default);
         AddExporter(BenchmarkDotNet.Exporters.MarkdownExporter.GitHub);
+        AddJob(Job.ShortRun.WithToolchain(CsProjCoreToolchain.NetCoreApp60));
         AddJob(Job.ShortRun.WithToolchain(CsProjCoreToolchain.NetCoreApp50));
         AddJob(Job.ShortRun.WithToolchain(CsProjClassicNetToolchain.Net472));
     }
 }
 
 [Config(typeof(BenchmarkConfig))]
-[GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByMethod)]
+[GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory, BenchmarkLogicalGroupRule.ByMethod)]
 public class Base32768Benchmark
 {
     [Params(1000, 100000)]
