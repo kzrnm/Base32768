@@ -65,7 +65,7 @@ namespace Kzrnm.Convert.Base32768
             using var writer = new StringWriter();
             using (var st = new Base32768Stream(writer))
             {
-#if NETSTANDARD1_0_OR_GREATER
+#if NETSTANDARD1_0_OR_GREATER || NET45
                 stream.CopyTo(st);
 #else
                 var buffer = new byte[81920];

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
+﻿using System.Diagnostics;
 /*
 Base32768 is a binary-to-text encoding optimised for UTF-16-encoded text.
 (e.g. Windows, Java, JavaScript)
