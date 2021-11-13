@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using static Kzrnm.Convert.Base32768.Utils;
 
 /*
@@ -95,6 +96,9 @@ namespace Kzrnm.Convert.Base32768
 
         static void ThrowFormatException(char c)
            => throw new FormatException($"Unrecognised Base32768 character: {c}");
+#if NETSTANDARD1_0_OR_GREATER || NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         static ushort ValidateCharAndLookupD(char c)
         {
             if (c < ZBits15Start || lookupD[c] is not ushort z)
@@ -176,7 +180,6 @@ namespace Kzrnm.Convert.Base32768
                 for (; i < count; i++)
                 {
                     var chr = str[i];
-
                     int numZBits = 15;
                     if (lookupD[chr] is ushort z)
                     {

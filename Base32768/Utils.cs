@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 #if !NETCOREAPP3_0_OR_GREATER
 namespace System.Runtime.CompilerServices
@@ -23,6 +22,17 @@ namespace Kzrnm.Convert.Base32768
 {
     internal static class Utils
     {
+#if !NETSTANDARD1_0_OR_GREATER && !NET45_OR_GREATER
+        public static void CopyTo(this Stream stream, Stream dest)
+        {
+            var buffer = new byte[81920];
+            int writedSize;
+            while ((writedSize = stream.Read(buffer, 0, buffer.Length)) != 0)
+            {
+                dest.Write(buffer, 0, writedSize);
+            }
+        }
+#endif
         public static void ThrowArgumentNullExceptionIfNull(object argument, [CallerArgumentExpression("argument")] string paramName = null)
         {
             if (argument is null)
