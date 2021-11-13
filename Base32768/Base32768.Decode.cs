@@ -96,7 +96,7 @@ namespace Kzrnm.Convert.Base32768
 
         static void ThrowFormatException(char c)
            => throw new FormatException($"Unrecognised Base32768 character: {c}");
-#if NETSTANDARD1_0_OR_GREATER
+#if NETSTANDARD1_0_OR_GREATER || NET45_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         static ushort ValidateCharAndLookupD(char c)
@@ -180,7 +180,6 @@ namespace Kzrnm.Convert.Base32768
                 for (; i < count; i++)
                 {
                     var chr = str[i];
-
                     int numZBits = 15;
                     if (lookupD[chr] is ushort z)
                     {
