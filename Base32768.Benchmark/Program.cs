@@ -17,17 +17,19 @@ public class BenchmarkConfig : ManualConfig
         AddDiagnoser(MemoryDiagnoser.Default);
         AddExporter(BenchmarkDotNet.Exporters.MarkdownExporter.GitHub);
         AddJob(Job.ShortRun.WithToolchain(CsProjCoreToolchain.NetCoreApp60));
-        AddJob(Job.ShortRun.WithToolchain(CsProjCoreToolchain.NetCoreApp50));
         AddJob(Job.ShortRun.WithToolchain(CsProjClassicNetToolchain.Net472));
     }
 }
 
 [Config(typeof(BenchmarkConfig))]
-[GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory, BenchmarkLogicalGroupRule.ByMethod)]
+[GroupBenchmarksBy(
+    BenchmarkLogicalGroupRule.ByJob,
+    BenchmarkLogicalGroupRule.ByCategory,
+    BenchmarkLogicalGroupRule.ByMethod)]
 public class Base32768Benchmark
 {
-    [Params(1000, 100000)]
-    public int N;
+    [Params(1_00_000, 10_000_000)]
+    public int ByteSize;
 
     public byte[] bytes;
     public string str;
@@ -35,7 +37,7 @@ public class Base32768Benchmark
     [GlobalSetup]
     public void Setup()
     {
-        bytes = new byte[N];
+        bytes = new byte[ByteSize];
         new Random(42).NextBytes(bytes);
 
         str = Base32768.Encode(bytes);
