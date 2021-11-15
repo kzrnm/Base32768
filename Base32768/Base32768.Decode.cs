@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using static Kzrnm.Convert.Base32768.Utils;
 
 /*
