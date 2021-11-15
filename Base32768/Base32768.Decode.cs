@@ -94,21 +94,6 @@ namespace Kzrnm.Convert.Base32768
             return byteLength;
         }
 
-        static void ThrowFormatException(char c)
-           => throw new FormatException($"Unrecognised Base32768 character: {c}");
-#if NETSTANDARD1_0_OR_GREATER || NET45_OR_GREATER
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-        static ushort ValidateCharAndLookupD(char c)
-        {
-            if (c < ZBits15Start || lookupD[c] is not ushort z)
-            {
-                ThrowFormatException(c);
-                return default;
-            }
-            return z;
-        }
-
         private static unsafe void DecodeCore(char* str, int count, byte[] result, int resultOffset, int resultCount)
         {
             int resultEnd = resultOffset + resultCount;
@@ -122,55 +107,55 @@ namespace Kzrnm.Convert.Base32768
                 {
                     {
                         var chr = str[i++];
-                        var z = ValidateCharAndLookupD(chr);
+                        var z = Validate15BitCharAndLookupD(chr);
                         result[numUint8s++] |= (byte)(z >> 7);
                         result[numUint8s] = (byte)(z << 1);
                     }
                     {
                         var chr = str[i++];
-                        var z = ValidateCharAndLookupD(chr);
+                        var z = Validate15BitCharAndLookupD(chr);
                         result[numUint8s++] |= (byte)(z >> 14);
                         result[numUint8s++] = (byte)(z >> 6);
                         result[numUint8s] = (byte)(z << 2);
                     }
                     {
                         var chr = str[i++];
-                        var z = ValidateCharAndLookupD(chr);
+                        var z = Validate15BitCharAndLookupD(chr);
                         result[numUint8s++] |= (byte)(z >> 13);
                         result[numUint8s++] = (byte)(z >> 5);
                         result[numUint8s] = (byte)(z << 3);
                     }
                     {
                         var chr = str[i++];
-                        var z = ValidateCharAndLookupD(chr);
+                        var z = Validate15BitCharAndLookupD(chr);
                         result[numUint8s++] |= (byte)(z >> 12);
                         result[numUint8s++] = (byte)(z >> 4);
                         result[numUint8s] = (byte)(z << 4);
                     }
                     {
                         var chr = str[i++];
-                        var z = ValidateCharAndLookupD(chr);
+                        var z = Validate15BitCharAndLookupD(chr);
                         result[numUint8s++] |= (byte)(z >> 11);
                         result[numUint8s++] = (byte)(z >> 3);
                         result[numUint8s] = (byte)(z << 5);
                     }
                     {
                         var chr = str[i++];
-                        var z = ValidateCharAndLookupD(chr);
+                        var z = Validate15BitCharAndLookupD(chr);
                         result[numUint8s++] |= (byte)(z >> 10);
                         result[numUint8s++] = (byte)(z >> 2);
                         result[numUint8s] = (byte)(z << 6);
                     }
                     {
                         var chr = str[i++];
-                        var z = ValidateCharAndLookupD(chr);
+                        var z = Validate15BitCharAndLookupD(chr);
                         result[numUint8s++] |= (byte)(z >> 9);
                         result[numUint8s++] = (byte)(z >> 1);
                         result[numUint8s] = (byte)(z << 7);
                     }
                     {
                         var chr = str[i++];
-                        var z = ValidateCharAndLookupD(chr);
+                        var z = Validate15BitCharAndLookupD(chr);
                         result[numUint8s++] |= (byte)(z >> 8);
                         result[numUint8s++] = (byte)z;
                     }
@@ -179,24 +164,14 @@ namespace Kzrnm.Convert.Base32768
                 var numUint8Remaining = 8;
                 for (; i < count; i++)
                 {
-                    var chr = str[i];
                     int numZBits = 15;
-                    if (lookupD[chr] is ushort z)
+                    var chr = str[i];
+                    var z = ValidateCharAndLookupD(chr, out var is7BitChar);
+                    if (is7BitChar)
                     {
-                        if (chr < ZBits15Start)
-                        {
-                            if (i + 1 != count)
-                            {
-                                ThrowFormatException(chr);
-                                return;
-                            }
-                            numZBits = 7;
-                        }
-                    }
-                    else
-                    {
-                        ThrowFormatException(chr);
-                        return;
+                        if (i + 1 != count)
+                            ThrowFormatException(chr);
+                        numZBits = 7;
                     }
 
                     do

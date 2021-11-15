@@ -28,11 +28,18 @@ namespace Kzrnm.Convert.Base32768
             var dicLookupD = new Dictionary<char, ushort>();
             var keys = new List<char>();
             for (int i = 0; i < lookupD.Length; i++)
-                if (lookupD[i] is ushort value)
+            {
+                ushort value = lookupD[i];
+                if (value < 32768)
                 {
                     keys.Add((char)i);
                     dicLookupD.Add((char)i, value);
                 }
+                else
+                {
+                    value.Should().Be(ushort.MaxValue);
+                }
+            }
 
             dicLookupD.Should().Equal(expectedLookupD);
 
@@ -45,6 +52,5 @@ namespace Kzrnm.Convert.Base32768
             keys.Reverse();
             string.Join("", keys).IsNormalized().Should().BeTrue();
         }
-
     }
 }

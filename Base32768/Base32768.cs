@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 /*
 Base32768 is a binary-to-text encoding optimised for UTF-16-encoded text.
 (e.g. Windows, Java, JavaScript)
@@ -37,13 +39,14 @@ namespace Kzrnm.Convert.Base32768
         internal const int BITS_PER_CHAR = 15;// Base32768 is a 15-bit encoding
         internal const int BITS_PER_BYTE = 8;
 
+        internal const int LookupUpperBound = 32768;
         internal const char ZBits15Start = '\u04a0';
 
-        internal static readonly ushort?[] lookupD = new ushort?[0xA860];
-        internal static readonly char[] lookupE7 = Build(
+        internal static readonly ushort[] lookupD = FilledArray(new ushort[0xA860], ushort.MaxValue);
+        internal static readonly char[] lookupE7 = BuildLookupE(
             "\u0180\u01a0" + "\u0240\u02a0"
         , 128);
-        internal static readonly char[] lookupE15 = Build(
+        internal static readonly char[] lookupE15 = BuildLookupE(
             "\u04a0\u04c0" + "\u0500\u0520" + "\u0680\u06c0" + "\u0760\u07a0" +
             "\u07c0\u07e0" + "\u1000\u1020" + "\u10a0\u10c0" + "\u1100\u1160" +
             "\u1180\u11a0" + "\u11e0\u1240" + "\u1260\u1280" + "\u12e0\u1300" +
@@ -58,7 +61,60 @@ namespace Kzrnm.Convert.Base32768
             "\ua000\ua480" + "\ua4a0\ua4c0" + "\ua500\ua600" + "\ua640\ua660" +
             "\ua6a0\ua6e0" + "\ua700\ua760" + "\ua780\ua7a0" + "\ua840\ua860"
         , 32768);
-        private static char[] Build(string pairString, int size)
+
+#if NETSTANDARD1_0_OR_GREATER || NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        internal static ushort Validate15BitCharAndLookupD(char c)
+        {
+            if (c >= ZBits15Start)
+            {
+                if (c < (uint)lookupD.Length)
+                {
+                    ushort z = lookupD[c];
+                    if (z < LookupUpperBound)
+                    {
+                        return z;
+                    }
+                }
+            }
+            ThrowFormatException(c);
+            return default;
+        }
+
+#if NETSTANDARD1_0_OR_GREATER || NET45_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        internal static ushort ValidateCharAndLookupD(char c, out bool is7BitChar)
+        {
+            is7BitChar = c < ZBits15Start;
+            if (c < (uint)lookupD.Length)
+            {
+                ushort z = lookupD[c];
+                if (z < LookupUpperBound)
+                {
+                    return z;
+                }
+            }
+            ThrowFormatException(c);
+            return default;
+        }
+
+        private static T[] FilledArray<T>(T[] array, T value)
+        {
+#if NETSTANDARD2_1_OR_GREATER
+            Array.Fill(array, value);
+#else
+            for (int i = 0; i < array.Length; i++)
+            {
+                array[i] = value;
+            }
+#endif
+            return array;
+        }
+
+
+        private static char[] BuildLookupE(string pairString, int size)
         {
             var encodeRepertoire = new char[size];
             ushort ix = 0;
@@ -75,5 +131,8 @@ namespace Kzrnm.Convert.Base32768
             Debug.Assert(size == ix);
             return encodeRepertoire;
         }
+
+        static void ThrowFormatException(char c)
+           => throw new FormatException($"Unrecognised Base32768 character: {c}");
     }
 }
