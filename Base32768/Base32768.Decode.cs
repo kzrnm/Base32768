@@ -69,9 +69,10 @@ namespace Kzrnm.Convert.Base32768
 
             unsafe
             {
-                fixed (char* p = str)
+                fixed (char* cp = str)
+                fixed (byte* bp = res)
                 {
-                    DecodeCore(p, str.Length, res, 0, res.Length);
+                    DecodeCore(cp, str.Length, bp, res.Length);
                 }
             }
             return res;
@@ -94,11 +95,9 @@ namespace Kzrnm.Convert.Base32768
             return byteLength;
         }
 
-        private static unsafe void DecodeCore(char* str, int count, byte[] result, int resultOffset, int resultCount)
+        private static unsafe void DecodeCore(char* str, int count, byte* result, int resultCount)
         {
-            int resultEnd = resultOffset + resultCount;
-            Debug.Assert(resultEnd <= result.Length);
-            var numUint8s = resultOffset;
+            var numUint8s = 0;
             int i;
 
             unchecked
@@ -190,20 +189,23 @@ namespace Kzrnm.Convert.Base32768
                             result[numUint8s++] |= (byte)(zz >> numZBits);
                             numUint8Remaining = 8;
                         }
-                    } while (numZBits > 0 && numUint8s < resultEnd);
+                    } while (numZBits > 0 && numUint8s < resultCount);
                 }
             }
         }
 
         internal static void DecodeCore(char[] str, int offset, int count, byte[] result, int resultOffset, int resultCount)
         {
+            Debug.Assert(resultOffset + resultCount <= result.Length);
             if ((uint)count > str.Length - offset)
                 ThrowArgumentOutOfRangeException(nameof(count));
+
             unsafe
             {
-                fixed (char* p = str)
+                fixed (char* cp = str)
+                fixed (byte* bp = result)
                 {
-                    DecodeCore(p + offset, count, result, resultOffset, resultCount);
+                    DecodeCore(cp + offset, count, bp + resultOffset, resultCount);
                 }
             }
         }
