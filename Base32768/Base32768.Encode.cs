@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using static Kzrnm.Convert.Base32768.Utils;
@@ -91,64 +92,67 @@ namespace Kzrnm.Convert.Base32768
         internal static unsafe void EncodeCore(byte* bytes, int count, TextWriter writer)
         {
             const int mask = (1 << 15) - 1;
-
-            for (; count >= 15; count -= 15)
+            Debug.Assert(mask < lookupE15.Length);
+            fixed (char* lookupE15Prt = lookupE15)
             {
-                uint u;
-
-                u = ((uint)*bytes++ << 24) | ((uint)*bytes++ << 16) | ((uint)*bytes++ << 8) | *bytes++;
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-                writer.Write(lookupE15[(u >> (32 - 30)) & mask]);
-
-                u = (u << 30) | ((uint)*bytes++ << 22) | ((uint)*bytes++ << 14) | ((uint)*bytes++ << 6);
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-
-                u = (u << 15) | ((uint)*bytes++ << 13) | ((uint)*bytes++ << 5);
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-
-                u = (u << 15) | ((uint)*bytes++ << 12) | ((uint)*bytes++ << 4);
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-
-                u = (u << 15) | ((uint)*bytes++ << 11) | ((uint)*bytes++ << 3);
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-
-                u = (u << 15) | ((uint)*bytes++ << 10) | ((uint)*bytes++ << 2);
-                writer.Write(lookupE15[(u >> (32 - 15)) & mask]);
-                writer.Write(lookupE15[(u >> (32 - 30)) & mask]);
-            }
-
-            var z = 0;
-            var numOBits = BITS_PER_CHAR;
-            for (int i = 0; i < count; i++, bytes++)
-            {
-                var by = *bytes;
-                if (numOBits > 8)
+                for (; count >= 15; count -= 15)
                 {
-                    numOBits -= 8;
-                    z |= by << numOBits;
+                    uint u;
+
+                    u = ((uint)*bytes++ << 24) | ((uint)*bytes++ << 16) | ((uint)*bytes++ << 8) | *bytes++;
+                    writer.Write(lookupE15Prt[(u >> (32 - 15)) & mask]);
+                    writer.Write(lookupE15Prt[(u >> (32 - 30)) & mask]);
+
+                    u = (u << 30) | ((uint)*bytes++ << 22) | ((uint)*bytes++ << 14) | ((uint)*bytes++ << 6);
+                    writer.Write(lookupE15Prt[(u >> (32 - 15)) & mask]);
+
+                    u = (u << 15) | ((uint)*bytes++ << 13) | ((uint)*bytes++ << 5);
+                    writer.Write(lookupE15Prt[(u >> (32 - 15)) & mask]);
+
+                    u = (u << 15) | ((uint)*bytes++ << 12) | ((uint)*bytes++ << 4);
+                    writer.Write(lookupE15Prt[(u >> (32 - 15)) & mask]);
+
+                    u = (u << 15) | ((uint)*bytes++ << 11) | ((uint)*bytes++ << 3);
+                    writer.Write(lookupE15Prt[(u >> (32 - 15)) & mask]);
+
+                    u = (u << 15) | ((uint)*bytes++ << 10) | ((uint)*bytes++ << 2);
+                    writer.Write(lookupE15Prt[(u >> (32 - 15)) & mask]);
+                    writer.Write(lookupE15Prt[(u >> (32 - 30)) & mask]);
                 }
-                else
+
+                var z = 0;
+                var numOBits = BITS_PER_CHAR;
+                for (int i = 0; i < count; i++, bytes++)
                 {
-                    z |= by >> (8 - numOBits);
-                    writer.Write(lookupE15[z]);
-                    numOBits += 7;
-                    z = (by << numOBits) & mask;
+                    var by = *bytes;
+                    if (numOBits > 8)
+                    {
+                        numOBits -= 8;
+                        z |= by << numOBits;
+                    }
+                    else
+                    {
+                        z |= by >> (8 - numOBits);
+                        writer.Write(lookupE15Prt[z]);
+                        numOBits += 7;
+                        z = (by << numOBits) & mask;
+                    }
                 }
-            }
-            if (numOBits != BITS_PER_CHAR)
-            {
-                var numZBits = BITS_PER_CHAR - numOBits;
-                var c = 7 ^ (numZBits & 0b111);
-                if (numZBits > 7)
+                if (numOBits != BITS_PER_CHAR)
                 {
-                    z |= (1 << c) - 1;
-                    writer.Write(lookupE15[z]);
-                }
-                else
-                {
-                    z >>= 8;
-                    z |= (1 << c) - 1;
-                    writer.Write(lookupE7[z]);
+                    var numZBits = BITS_PER_CHAR - numOBits;
+                    var c = 7 ^ (numZBits & 0b111);
+                    if (numZBits > 7)
+                    {
+                        z |= (1 << c) - 1;
+                        writer.Write(lookupE15Prt[z]);
+                    }
+                    else
+                    {
+                        z >>= 8;
+                        z |= (1 << c) - 1;
+                        writer.Write(lookupE7[z]);
+                    }
                 }
             }
         }
