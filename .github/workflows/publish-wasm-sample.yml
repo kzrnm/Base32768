@@ -6,6 +6,7 @@ on:
       - master
     paths:
       - "Samples/WebAssemblySample/**"
+  workflow_dispatch:
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
