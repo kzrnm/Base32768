@@ -91,7 +91,7 @@
 		{
 			if (module is null)
 				throw new Exception("Failed to load Decode.razor.js");
-			if (currentBytes?.Length > 0)
+			if (currentBytes is not { Length: > 0 })
 				throw new Exception("Byte array is empty.");
 
 			await module.InvokeVoidAsync("BlazorDownloadFile", "file.bin", "application/octet-stream", currentBytes);
