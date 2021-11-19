@@ -7,40 +7,42 @@
 <h1>Base32768 Decode</h1>
 
 <div>
-  <div class="form-group">
-    <label for="base32768Text">Base32768 Text</label>
-    <input type="text" class="form-control" id="base32768Text" aria-describedby="base32768TextHelp" placeholder="Ⴁሂʟ"
-	@bind="@currentText" @bind:event="oninput">
-    <small id="base32768TextHelp" class="form-text text-muted">input Base32768 text.</small>
-  </div>
-  <div class="form-group">
-    <label for="byteArray">Byte Array</label>
-    <textarea type="text" class="form-control" id="byteArray" aria-describedby="byteArrayHelp" placeholder="2, 2, 7, 11"
-	readonly
-	@bind="@currentBytesText" @bind:event="oninput" />
-    <small id="byteArrayHelp" class="form-text text-muted">camma separated byte array.</small>
-	<p>
-		<button type="button" class="btn btn-primary"
-		@onclick="DownloadBinary"
-		disabled="@(currentBytes is not { Length: > 0 } )">Download Binary</button>
-	</p>
-  </div>
-  <div class="alert alert-danger @alertDisplay" role="alert">
-  @alertMessage
-  </div>
+	<div class="form-group">
+		<label for="base32768Text">Base32768 Text</label>
+		<input type="text" class="form-control" id="base32768Text" aria-describedby="base32768TextHelp" placeholder="Ⴁሂʟ"
+			   @bind="@currentText" @bind:event="oninput">
+		<small id="base32768TextHelp" class="form-text text-muted">input Base32768 text.</small>
+	</div>
+	<div class="form-group">
+		<label for="byteArray">Byte Array</label>
+		<textarea type="text" class="form-control" id="byteArray" aria-describedby="byteArrayHelp" placeholder="2, 2, 7, 11"
+				  readonly
+				  @bind="@currentBytesText" @bind:event="oninput" />
+		<small id="byteArrayHelp" class="form-text text-muted">camma separated byte array.</small>
+		<p>
+			<button type="button" class="btn btn-primary"
+					@onclick="DownloadBinary"
+					disabled="@(currentBytes is not { Length: > 0 } )">
+				Download Binary
+			</button>
+		</p>
+	</div>
+	<div class="alert alert-danger @alertDisplay" role="alert">
+		@alertMessage
+	</div>
 </div>
 
 @code {
-	
-    private IJSObjectReference? module;
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", 
-                "./_content/WebAssemblySample/Pages/Decode.razor.js");
-        }
-    }
+
+	private IJSObjectReference? module;
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			module = await JSRuntime.InvokeAsync<IJSObjectReference>("import",
+				"./Pages/Decode.razor.js");
+		}
+	}
 
 	private string _currentText = "";
 	private string _currentBytesText = "";
@@ -87,15 +89,13 @@
 	{
 		try
 		{
-			if (currentBytes?.Length > 0 && module is not null)
-			{
-				await module.InvokeAsync<object>("BlazorDownloadFile", "file.bin", "application/octet-stream", currentBytes);
-				alertMessage = "";
-			}
-			else
-			{
-				alertMessage = "Byte array is empty.";
-			}
+			if (module is null)
+				throw new Exception("Failed to load Decode.razor.js");
+			if (currentBytes?.Length > 0)
+				throw new Exception("Byte array is empty.");
+
+			await module.InvokeVoidAsync("BlazorDownloadFile", "file.bin", "application/octet-stream", currentBytes);
+			alertMessage = "";
 		}
 		catch (Exception ex)
 		{

@@ -1,11 +1,4 @@
-﻿
-function b64toBlob(base64, type = 'application/octet-stream') {
-    return fetch(`data:${type};base64,${base64}`).then(res => res.blob())
-}
-
-async function BlazorDownloadFile(filename, contentType, content) {
-    const data = await b64toBlob(content, contentType);
-
+﻿export function BlazorDownloadFile(filename, contentType, data) {
     const file = new File([data], filename, { type: contentType });
     const exportUrl = URL.createObjectURL(file);
 

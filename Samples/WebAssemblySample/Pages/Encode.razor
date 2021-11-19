@@ -1,4 +1,5 @@
 ﻿@page "/Encode"
+@inject IJSRuntime JSRuntime
 @using Kzrnm.Convert.Base32768;
 
 <PageTitle>Base32768 Encode</PageTitle>
@@ -6,26 +7,43 @@
 <h1>Base32768 Encode</h1>
 
 <div>
-  <div class="form-group">
-    <label for="byteArray">Byte Array</label>
-    <input type="text" class="form-control" id="byteArray" aria-describedby="byteArrayHelp" placeholder="2, 2, 7, 11"
-	@bind="@currentBytesText" @bind:event="oninput">
-    <small id="byteArrayHelp" class="form-text text-muted">input camma separated byte array.</small>
-	<InputFile OnChange="@LoadFiles" />
-  </div>
-  <div class="form-group">
-    <label for="base32768Text">Base32768 Text</label>
-    <input type="text" class="form-control" id="base32768Text" aria-describedby="base32768TextHelp" placeholder="Ⴁሂʟ"
-	readonly
-	@bind="@currentText" @bind:event="oninput">
-    <small id="base32768TextHelp" class="form-text text-muted">Base32768 text.</small>
-  </div>
-  <div class="alert alert-danger @alertDisplay" role="alert">
-  @alertMessage
-  </div>
+	<div class="form-group">
+		<label for="byteArray">Byte Array</label>
+		<input type="text" class="form-control" id="byteArray" aria-describedby="byteArrayHelp" placeholder="2, 2, 7, 11"
+			   @bind="@currentBytesText" @bind:event="oninput">
+		<small id="byteArrayHelp" class="form-text text-muted">input camma separated byte array.</small>
+		<InputFile OnChange="@LoadFiles" />
+	</div>
+	<div class="form-group">
+		<label for="base32768Text">Base32768 Text</label>
+		<input type="text" class="form-control" id="base32768Text" aria-describedby="base32768TextHelp" placeholder="Ⴁሂʟ"
+			   readonly
+			   @bind="@currentText" @bind:event="oninput">
+		<small id="base32768TextHelp" class="form-text text-muted">Base32768 text.</small>
+		<p>
+			<button type="button" class="btn btn-primary"
+					@onclick="CopyBase32768TextToClipboardTo"
+					disabled="@(currentText is not { Length: > 0 } )">
+				Copy
+			</button>
+		</p>
+	</div>
+	<div class="alert alert-danger @alertDisplay" role="alert">
+		@alertMessage
+	</div>
 </div>
 
 @code {
+	private IJSObjectReference? module;
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			module = await JSRuntime.InvokeAsync<IJSObjectReference>("import",
+				"./Pages/Encode.razor.js");
+		}
+	}
+
 	private string _currentText = "";
 	private string _currentBytesText = "";
 
@@ -84,6 +102,22 @@
 				await stream.CopyToAsync(ms);
 			}
 			_currentText = Base32768.Encode(ms.ToArray());
+			alertMessage = "";
+		}
+		catch (Exception ex)
+		{
+			alertMessage = ex.Message;
+		}
+	}
+
+	private async Task CopyBase32768TextToClipboardTo()
+	{
+		try
+		{
+			if (module is null)
+				throw new Exception("Failed to load Decode.razor.js");
+
+			await module.InvokeVoidAsync("Base32768TextToClipboard");
 			alertMessage = "";
 		}
 		catch (Exception ex)
