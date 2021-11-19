@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - "Samples/WebAssemblySample"
+      - "Samples/WebAssemblySample/**"
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
