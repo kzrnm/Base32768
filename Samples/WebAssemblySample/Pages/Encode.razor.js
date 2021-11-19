@@ -1,4 +1,3 @@
-﻿export function Base32768TextToClipboard() {
-    document.getElementById("base32768Text").select();
-    document.execCommand("copy");
+﻿export async function CopyTextToClipboard(text) {
+    await navigator.clipboard.writeText(text)
 }

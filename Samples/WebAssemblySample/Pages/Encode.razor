@@ -117,7 +117,7 @@
 			if (module is null)
 				throw new Exception("Failed to load Decode.razor.js");
 
-			await module.InvokeVoidAsync("Base32768TextToClipboard");
+			await module.InvokeVoidAsync("CopyTextToClipboard", currentText);
 			alertMessage = "";
 		}
 		catch (Exception ex)
