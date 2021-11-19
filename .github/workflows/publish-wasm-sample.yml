@@ -33,8 +33,8 @@ jobs:
       - name: Publish wasm
         run: dotnet publish Samples/WebAssemblySample/WebAssemblySample.csproj -c Release -o release
 
-      - name: Change base-tag in index.html from / to WebAssemblySample
-        run: sed -i 's/<base href="\/" \/>/<base href="\/WebAssemblySample\/" \/>/g' release/wwwroot/index.html
+      - name: Change base-tag in index.html from / to Base32768
+        run: sed -i 's/<base href="\/" \/>/<base href="\/Base32768\/" \/>/g' release/wwwroot/index.html
 
       - name: copy index.html to 404.html
         run: cp release/wwwroot/index.html release/wwwroot/404.html
