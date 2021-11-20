@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <LangVersion>10</LangVersion>
-    <TargetFrameworks>net6.0;net5.0;net472</TargetFrameworks>
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>
     <RootNamespace>Kzrnm.Convert.Base32768.Benchmark</RootNamespace>
 
     <NoWarn>CA1050</NoWarn>
