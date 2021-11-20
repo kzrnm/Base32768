@@ -34,12 +34,12 @@
 
 @code {
 
-	private IJSObjectReference? module;
+	private IJSObjectReference? js;
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
 		{
-			module = await JSRuntime.InvokeAsync<IJSObjectReference>("import",
+			js = await JSRuntime.InvokeAsync<IJSObjectReference>("import",
 				"./Pages/Decode.razor.js");
 		}
 	}
@@ -89,12 +89,12 @@
 	{
 		try
 		{
-			if (module is null)
+			if (js is null)
 				throw new Exception("Failed to load Decode.razor.js");
 			if (currentBytes is not { Length: > 0 })
 				throw new Exception("Byte array is empty.");
 
-			await module.InvokeVoidAsync("BlazorDownloadFile", "file.bin", "application/octet-stream", currentBytes);
+			await js.InvokeVoidAsync("BlazorDownloadFile", "file.bin", "application/octet-stream", currentBytes);
 			alertMessage = "";
 		}
 		catch (Exception ex)

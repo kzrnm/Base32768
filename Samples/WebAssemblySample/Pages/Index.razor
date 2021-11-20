@@ -1,16 +1,68 @@
 ﻿@page "/"
+@using System.Diagnostics;
+@using Kzrnm.Convert.Base32768;
 
 <PageTitle>Base32768</PageTitle>
 
 <h1>Base32768</h1>
 
 <div class="nav-item px-3">
-    <NavLink class="nav-link" href="encode">
-        <span class="oi oi-arrow-thick-right"></span> Encode
-    </NavLink>
+	<NavLink class="nav-link" href="encode">
+		<span class="oi oi-arrow-thick-right"></span> Encode
+	</NavLink>
 </div>
 <div class="nav-item px-3">
-    <NavLink class="nav-link" href="decode">
-        <span class="oi oi-arrow-thick-left"></span> Decode
-    </NavLink>
+	<NavLink class="nav-link" href="decode">
+		<span class="oi oi-arrow-thick-left"></span> Decode
+	</NavLink>
 </div>
+
+<hr />
+
+<h2>Benchmark</h2>
+
+<div>
+	<div class="form-group">
+		<p>
+			<label>
+				Byte Array Size:
+				<input type="number" @bind="byteSize" />
+			</label>
+		</p>
+		<p><button type="button" class="btn btn-primary" @onclick="RunBenchmark">Run</button></p>
+	</div>
+	<div>
+		<p>String Size: @stringSize</p>
+	</div>
+	<div>
+		<p>Encode time: @encodeTime ms</p>
+	</div>
+	<div>
+		<p>Decode time: @decodeTime ms</p>
+	</div>
+</div>
+
+@code {
+	private int byteSize { set; get; }
+	private int stringSize { set; get; }
+
+	private long encodeTime { set; get; }
+	private long decodeTime { set; get; }
+
+	private void RunBenchmark()
+	{
+		var bytes = new byte[byteSize];
+		for (int i = 0; i < bytes.Length; i++)
+			bytes[i] = (byte)(i & 255);
+
+		var sw = Stopwatch.StartNew();
+		var str = Base32768.Encode(bytes);
+		encodeTime = sw.ElapsedMilliseconds;
+		stringSize = str.Length;
+
+		sw.Restart();
+		var bytes2 = Base32768.Decode(str);
+		decodeTime = sw.ElapsedMilliseconds;
+		byteSize = bytes2.Length;
+	}
+}
