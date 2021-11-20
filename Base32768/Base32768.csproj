@@ -21,7 +21,7 @@
 		<RepositoryUrl>https://github.com/kzrnm/Base32768</RepositoryUrl>
 		<PackageReleaseNotes>https://github.com/kzrnm/Base32768/blob/master/CHANGELOG.md</PackageReleaseNotes>
 
-		<Version>2.0.1</Version>
+		<Version>2.0.2</Version>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<IncludeSymbols>true</IncludeSymbols>
