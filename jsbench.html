@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="https://unpkg.com/base32768@2/dist/iife/base32768.js" crossorigin></script>
+</head>
+
+<body>
+    <h1>Base32768 bench</h1>
+
+
+    <div>
+
+        <p><label>Byte Array Size: <input type="number" id="byteSize" /></label></p>
+        <p><button id="runButton">Run</button></p>
+        <p>String Array Size: <span id="strSize"></span></p>
+        <p>Encode Time: <span id="encodeTime"></span> ms</p>
+        <p>Decode Time: <span id="decodeTime"></span> ms</p>
+
+    </div>
+
+    <script>
+        document.getElementById("runButton").addEventListener('click', () => {
+            const byteSize = parseInt(document.getElementById("byteSize").value);
+            const uint8Array = new Uint8Array(byteSize);
+            for (let i = 0; i < byteSize; i++) {
+                uint8Array[i] = i & 255;
+            }
+
+            let start = new Date();
+            const str = base32768.encode(uint8Array);
+            let end = new Date();
+            document.getElementById("strSize").innerHTML = str.length;
+            document.getElementById("encodeTime").innerHTML = (end.getTime() - start.getTime());
+
+
+            start = new Date();
+            const bytes2 = base32768.decode(str);
+            end = new Date();
+            document.getElementById("decodeTime").innerHTML = (end.getTime() - start.getTime());
+            console.log(bytes2.length)
+        }, false);
+    </script>
+</body>
+
+</html>
